@@ -1,0 +1,22 @@
+README
+
+
+Running with pure C:
+
+gcc -fPIC -o main main.c numericalInt.c -I. -lm
+
+./main <numInterations>
+
+
+Running with swig (Hybrid - C with Python)
+
+./run.sh <numInterations>
+
+It will compile and then run the python program with time. 
+Must verify if the path of python includes is correct inside the script run.sh.
+
+
+Running with pure python
+
+
+python numericalIntPurePython.py <numInterations>
