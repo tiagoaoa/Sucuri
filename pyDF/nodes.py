@@ -57,7 +57,7 @@ class FilterTagged(Node): #produce operands in the form of TaggedValue, with the
 
 		tag = args[0].tag
 		argvalues = [arg.value for arg in args]
-		result = self.create_oper(self.f(argvalues), workerid, operq)
+		result = self.f(argvalues) 
 		opers = self.create_oper(TaggedValue(result, tag), workerid, operq, tag)
 		
 		self.sendops(opers, operq)

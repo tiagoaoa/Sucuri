@@ -15,14 +15,14 @@ def filterprices(args):
 	for line in base:
 		for price in re.findall(regexp, line):
 			fprice = float(price.replace("R$ ", "").replace(",","."))
-			if fprice > 50:
+			if fprice > 5:
 				#print "%s > 5" %fprice
 				prices+=[fprice]
 	print "%s %s" %(filename, len(prices))
 	return len(prices)
 
 def outprices(args):
-	print "Prices: %s" %[price.val for price in args[0]]
+	print "Prices: %s" %args[0]
 
 graph = DFGraph()
 nprocs = int(sys.argv[1])
