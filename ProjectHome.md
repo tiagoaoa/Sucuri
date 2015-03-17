@@ -1,0 +1,1 @@
+Sucuri is a minimalistic library for the Python language that provides dataflow programming and execution at a very high level. Once an application is parallelized with Sucuri, the same code can be executed either on a multicore or on an cluster.
