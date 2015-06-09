@@ -1,5 +1,7 @@
+import sys, os
+sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
-import sys, math, numericalInt
+import math, numericalInt
 
 class ND(Node):
 	
@@ -7,6 +9,7 @@ class ND(Node):
 		self.f = f
 		self.inport = [[] for i in range(inputn)]
 		self.dsts = []
+		self.affinity = None
 		self.start = start
 		self.end = end
 		self.peso = peso
