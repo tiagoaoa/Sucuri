@@ -14,4 +14,4 @@ peso = int(sys.argv[2])
 
 for x in xrange(1, n+1):
 	s += f(x, peso)
-print s	
+print 'Result: %f' %s
