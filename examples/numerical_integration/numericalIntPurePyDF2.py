@@ -24,11 +24,12 @@ def intNumTotal(args):
 
 
 nprocs = int(sys.argv[1])
-n = int(sys.argv[2])
-peso = int(sys.argv[3])
+nworkers = int(sys.argv[2])
+n = int(sys.argv[3])
+peso = int(sys.argv[4])
 
 graph = DFGraph()
-sched = Scheduler(graph, nprocs, mpi_enabled = False)
+sched = Scheduler(graph, nworkers, mpi_enabled = True)
 
 R = Node(intNumTotal, nprocs)
 graph.add(R)
