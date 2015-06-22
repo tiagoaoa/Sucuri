@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
-import math, numericalInt
+import math
 
 class ND(Node):
 	
