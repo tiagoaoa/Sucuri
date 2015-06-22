@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
-import math, numericalInt
+import math
 
 def intNum(args):
 	peso=args[0]
@@ -29,7 +29,7 @@ n = int(sys.argv[3])
 peso = int(sys.argv[4])
 
 graph = DFGraph()
-sched = Scheduler(graph, nworkers, mpi_enabled = True)
+sched = Scheduler(graph, nworkers, mpi_enabled = False)
 
 R = Node(intNumTotal, nprocs)
 graph.add(R)
