@@ -35,7 +35,7 @@ class Source(Node): #source class
                 self.dsts = []
                 self.tagcounter = 0
 
-		#self.affinity = 0
+		self.affinity = None
 
         def run(self, args, workerid, operq):
                 for line in self.it:
