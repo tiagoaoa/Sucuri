@@ -24,7 +24,7 @@ class Worker(Process):
 
 
 	def run(self):
-		print "I am worker %s" %self.name
+		print "I am worker %s" %self.wid
 		self.operq.put([Oper(self.wid, None, None, None)]) #Request a task to start
 
 		while True:
@@ -33,7 +33,7 @@ class Worker(Process):
 
 			#print "Start working %s" %(self.name)
 			node = self.graph.nodes[task.nodeid]
-			opermsg = node.run(task.args, self.wid, self.operq)
+			node.run(task.args, self.wid, self.operq)
 			#self.sendops(opermsg)
 			
 		
@@ -140,6 +140,7 @@ class Scheduler:
 		self.conn = []
 		self.waiting = [] #queue containing idle workers
 		self.n_workers = n_workers #number of workers
+		self.pending_tasks = [0] * n_workers #keeps track of the number of tasks sent to each worker without a request from the worker (due to affinity)
 		for i in range(n_workers):
 			sched_conn, worker_conn = Pipe()
 			worker_conns += [worker_conn]
@@ -229,25 +230,39 @@ class Scheduler:
 
 
 
-	def isready(self, node):
-		return reduce(lambda a, b: a and b, [len(port) > 0 for port in node.inport])
+	def check_match(self, node):
+		#return reduce(lambda a, b: a and b, [len(port) > 0 for port in node.inport])
+		for (tag, val) in node.inport[0]:
+			count = 1
+			for port in node.inport[1:]:
+				if [v for (t, v) in port if t == tag]:
+					count += 1				
+			if count == len(node.inport):
+				return tag
 
-
+		return None
 
 	def propagate_op(self, oper):
 		dst = self.graph.nodes[oper.dstid]
-		dst.inport[oper.dstport] += [oper.val]
+		
+		dst.inport[oper.dstport] += [(oper.tag, oper.val)]
 
-		if self.isready(dst):
-			self.issue(dst)
-
+		tag = self.check_match(dst)
+		if tag != None:
+			self.issue(dst, tag)
 	def check_affinity(self, task):
 		node = self.graph.nodes[task.nodeid]
 		return node.affinity
 
 
-	def issue(self, node):
-		args = [port.pop() for port in node.inport]
+	def issue(self, node, tag):
+		args = []
+		for port in node.inport:
+			t, v = [(t, v) for (t, v) in port if t == tag][0]
+			port.remove((t, v))
+			args += [v]
+		
+	#	print "Args %s " %args	
 		task = Task(node.f, node.id, args)
 		self.tasks += [task]
 
@@ -299,8 +314,11 @@ class Scheduler:
 					self.propagate_op(oper)
 
 			wid = opersmsg[0].wid
-			if wid not in self.waiting and opersmsg[0].request_task: 
-				self.waiting += [wid] #indicate that the worker is idle, waiting for a task
+			if wid not in self.waiting and opersmsg[0].request_task:
+				if self.pending_tasks[wid] > 0:
+					self.pending_tasks[wid] -= 1
+				else:
+					self.waiting += [wid] #indicate that the worker is idle, waiting for a task
 
 			while len(tasks) > 0 and len(self.waiting) > 0:
 				task = tasks.pop(0)
@@ -308,19 +326,20 @@ class Scheduler:
 				if wid != None:
 					if wid in self.waiting:
 						self.waiting.remove(wid)
+					else:
+						self.pending_tasks[wid] += 1
 				else:
 					wid = self.waiting.pop(0)
 				#print "Got opermsg from worker %d" %wid
 				if wid < self.n_workers: #local worker
 					worker = workers[wid]
-					#print "Sending %s to %s" %(task.nodeid, worker.name)
-				
+					
 					self.conn[worker.wid].send(task)
 				else:
 					task.workerid = wid
 					self.outqueue.put(task)
 
-			
+		print "Waiting %s" %self.waiting		
 		self.terminate_workers(self.workers)
 		
 		

@@ -10,6 +10,9 @@ class TaggedValue:
 		self.tag = tag
 		self.request_task = True
 
+	def __repr__(self):
+		return "(%d, %s)" %(self.tag, self.value)
+
         def __cmp__(self, obj):
 		if obj == None:
 			return 1
@@ -37,13 +40,14 @@ class Source(Node): #source class
         def run(self, args, workerid, operq):
                 for line in self.it:
 			result = self.f(line, args)
+
 			tag = self.tagcounter
                         opers = self.create_oper(TaggedValue(result, tag), workerid, operq, tag)
                         for oper in opers:
                                 oper.request_task = False
                         self.sendops(opers, operq)
 			self.tagcounter += 1
-                opers = [Oper(workerid, None, None, None)] #sinalize eof
+                opers = [Oper(workerid, None, None, None)] #sinalize eof and request a task
                 self.sendops(opers, operq)
 
 	def f(self, line, args):
