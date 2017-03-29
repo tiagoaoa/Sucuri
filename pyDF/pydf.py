@@ -80,26 +80,38 @@ class Node:
 		if len(self.inport) == 0:
 			opers = self.create_oper(self.f(), workerid, operq)
 		else:
-			opers = self.create_oper(self.f(args), workerid, operq)
+			opers = self.create_oper(self.f([a.val for a in args]), workerid, operq)
 		self.sendops(opers, operq)
 
 
 	def sendops(self, opers, operq):
 		operq.put(opers)
 
-	def create_oper(self, value, workerid, operq, tag = 0): #create operand message
+	def create_oper(self, value, workerid, operq): #create operand message
 		opers = []
 		if self.dsts == []:
 			opers.append(Oper(workerid, None, None, None)) #if no output is produced by the node, we still have to send a msg to the scheduler.
 		else:
 			for (dstid, dstport) in self.dsts:
 				oper = Oper(workerid, dstid, dstport, value)
-				oper.tag = tag
 				opers.append(oper)
 				#print "Result produced %s (worker: %d)" %(oper.val, workerid)
 		return opers
 
 
+	def match(self):
+		args = []
+		for port in self.inport:
+			if len(port) > 0:
+				arg = port[0]
+				args += [port[0]]
+		if len(args) == len(self.inport):
+			for inport in self.inport:
+				arg = inport[0]
+				inport.remove(arg)
+			return args
+		else:
+			return None
 
 
 
@@ -111,17 +123,7 @@ class Oper:
 		#dstport -> input port of the target task
 		#val -> actual value of the operand
 
-		self.tag = 0 #default tag
 		self.request_task = True #if true, piggybacks a request for a task to the worker where the opers were produced.
-        def __cmp__(self, obj):
-                if not isinstance(obj, Oper):
-                        raise TypeError('can only compare Oper with Oper.')
-                if self.tag > obj.tag:
-                        return 1
-                elif self.tag < obj.tag:
-                        return -1
-                else:
-                        return 0
 
 
 
@@ -230,37 +232,20 @@ class Scheduler:
 
 
 
-	def check_match(self, node):
-		#return reduce(lambda a, b: a and b, [len(port) > 0 for port in node.inport])
-		for (tag, val) in node.inport[0]:
-			count = 1
-			for port in node.inport[1:]:
-				if [v for (t, v) in port if t == tag]:
-					count += 1				
-			if count == len(node.inport):
-				return tag
-
-		return None
 
 	def propagate_op(self, oper):
 		dst = self.graph.nodes[oper.dstid]
 		
-		dst.inport[oper.dstport] += [(oper.tag, oper.val)]
-
-		tag = self.check_match(dst)
-		if tag != None:
-			self.issue(dst, tag)
+		dst.inport[oper.dstport] += [oper]
+		args = dst.match()
+		if args != None:
+			self.issue(dst, args)
 	def check_affinity(self, task):
 		node = self.graph.nodes[task.nodeid]
 		return node.affinity
 
 
-	def issue(self, node, tag):
-		args = []
-		for port in node.inport:
-			t, v = [(t, v) for (t, v) in port if t == tag][0]
-			port.remove((t, v))
-			args += [v]
+	def issue(self, node, args):
 		
 	#	print "Args %s " %args	
 		task = Task(node.f, node.id, args)

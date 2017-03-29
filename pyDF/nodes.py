@@ -76,6 +76,7 @@ class Feeder(Node):
                 self.dsts = []
                 self.inport = []
 		self.affinity = None
+		print "Setting feeder affinity"
 
         def f(self):
                 print "Feedind %s" %self.value
