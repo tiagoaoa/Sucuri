@@ -27,8 +27,8 @@ def assist(args):
 
 graph = DFGraph()
 
-ini = Feeder(-1)
-ini2 = Feeder(100)
+ini = Feeder(-1) #-1 is the initial value of the first input of the FliFlop node, to force it propagate the initial solution
+ini2 = Feeder(100) #100 is the initial solution
 
 
 
