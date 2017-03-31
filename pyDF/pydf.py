@@ -272,7 +272,7 @@ class Scheduler:
 	def start(self):
 		operq = self.operq
 
-		#print "Roots %s" %[r for r in self.graph.nodes.values() if len(r.inport) == 0]
+		print "Roots %s" %[r for r in self.graph.nodes if len(r.inport) == 0]
 		for root in [r for r in self.graph.nodes if len(r.inport) == 0]:
 			task = Task(root.f, root.id)
 			self.tasks += [task]

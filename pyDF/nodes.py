@@ -54,6 +54,22 @@ class Source(Node): #source class
 		#default source operation
 		return line
 
+
+class FlipFlop(Node):
+	def __init__(self, f):
+		self.f = f
+		self.inport = [[],[]]
+		self.dsts = []
+		self.affinity = None
+
+	def run(self, args, workerid, operq):
+		opers = self.create_oper(self.f([a.val for a in args]), workerid, operq)
+
+		if opers[0].val == False:
+			opers = [Oper(workerid, None, None, None)]
+		self.sendops(opers, operq)
+
+
 class FilterTagged(Node): #produce operands in the form of TaggedValue, with the same tag as the input
 	def run(self, args, workerid, operq):
 		if args[0] == None:                               	
