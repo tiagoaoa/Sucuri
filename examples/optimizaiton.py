@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.environ['PYDFHOME'])
+
 from pyDF import *
 
 def op1(input1):
@@ -6,11 +9,11 @@ def op1(input1):
 
 def op2(intput):
 #	print "Op 2"
-	return 2
+	return 3
 
 def op3(intput):
 #	print "Op 3"
-	return 1
+	return 2
 
 
 
@@ -20,13 +23,12 @@ def assist(args):
 	if args[1] < args[0] or args[0] < 0:
 		return args[1]
 	else:
-		return args[0]
-
+		return False
 
 graph = DFGraph()
 
 ini = Feeder(-1)
-ini2 = Feeder(-2)
+ini2 = Feeder(100)
 
 
 
@@ -35,8 +37,7 @@ heur2 = Node(op2, 1)
 heur3 = Node(op3, 1)
 
 
-assist1 = Node(assist, 2)
-assist1.pin(0)
+assist1 = FlipFlop(assist)
 
 for i in range(1,4):
 	graph.add(eval("heur%d" %i ))

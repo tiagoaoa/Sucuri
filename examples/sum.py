@@ -1,4 +1,4 @@
-from pydf import *
+from pyDF import *
 import sys
 
 def psum(args):
@@ -36,7 +36,7 @@ nprocs = int(sys.argv[1])
 n = int(sys.argv[2])
 
 graph = DFGraph()
-sched = Scheduler(graph, nprocs)
+sched = Scheduler(graph, nprocs, mpi_enabled = "False")
 
 
 
