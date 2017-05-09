@@ -9,7 +9,6 @@ class TaggedValue:
 		self.value = value
 		self.tag = tag
 		self.request_task = True
-
 	def __repr__(self):
 		return "(%d, %s)" %(self.tag, self.value)
 
@@ -42,7 +41,7 @@ class Source(Node): #source class
 			result = self.f(line, args)
 
 			tag = self.tagcounter
-                        opers = self.create_oper(TaggedValue(result, tag), workerid, operq, tag)
+                        opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
                         for oper in opers:
                                 oper.request_task = False
                         self.sendops(opers, operq)
@@ -117,19 +116,19 @@ class Serializer(Node):
 		#print "Got operand with tag %d (expecting %d) Worker %d" %(args[0].tag, self.next_tag, workerid)
 		for (arg, argbuffer) in map(None, args, self.arg_buffer):
 			bisect.insort(argbuffer, arg)
-			
-		if args[0].tag == self.next_tag:
+		print args[0].val	
+		if args[0].val.tag == self.next_tag:
 			next = self.next_tag
 			argbuffer = self.arg_buffer
-			buffertag = argbuffer[0][0].tag
+			buffertag = argbuffer[0][0].val.tag
 			while buffertag == next:
 				args = [arg.pop(0) for arg in argbuffer]
 				
-				opers = self.create_oper(self.f([arg.value for arg in args]), workerid, operq)
+				opers = self.create_oper(self.f([arg.val for arg in args]), workerid, operq)
 				self.sendops(opers, operq)
 				next += 1
 				if len(argbuffer[0]) > 0:
-					buffertag = argbuffer[0][0].tag
+					buffertag = argbuffer[0][0].val.tag
 				else:
 					buffertag = None
 

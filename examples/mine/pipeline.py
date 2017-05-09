@@ -8,8 +8,7 @@ from pyDF import *
 
 def print_line(args):
 	line = args[0]
-	print "-- " + line[:-1] + " --"
-
+	print line
 nprocs = int(sys.argv[1])
 
 graph = DFGraph()
