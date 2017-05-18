@@ -116,7 +116,6 @@ class Serializer(Node):
 		#print "Got operand with tag %d (expecting %d) Worker %d" %(args[0].tag, self.next_tag, workerid)
 		for (arg, argbuffer) in map(None, args, self.arg_buffer):
 			bisect.insort(argbuffer, arg)
-		print args[0].val	
 		if args[0].val.tag == self.next_tag:
 			next = self.next_tag
 			argbuffer = self.arg_buffer
