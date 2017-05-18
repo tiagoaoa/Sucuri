@@ -1,3 +1,4 @@
+#Example of a simple filter function applied to multiple text files.
 import sys, os
 sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
