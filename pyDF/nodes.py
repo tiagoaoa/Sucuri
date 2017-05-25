@@ -1,5 +1,5 @@
 #Sucuri - Minimalistic Python Dataflow Programming Library
-#author: tiagoaoa@cos.ufrj.br
+#author: tiago@ime.uerj.br
 from pydf import *
 import bisect
 
