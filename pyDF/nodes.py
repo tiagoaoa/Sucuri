@@ -94,7 +94,7 @@ class Feeder(Node):
 		print "Setting feeder affinity"
 
         def f(self):
-                print "Feedind %s" %self.value
+                print "Feeding %s" %self.value
                 return self.value
 
 
