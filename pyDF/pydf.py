@@ -166,7 +166,7 @@ class Scheduler:
 		
 		if rank == 0:
 			print "I am the master. There are %s mpi processes. (hostname = %s)" %(self.mpi_size, MPI.Get_processor_name())
-			#master
+			self.pending_tasks = [0] * self.n_workers * self.mpi_size
 			self.outqueue = Queue()
 			def mpi_input(inqueue):
 				while self.keep_working:
@@ -279,7 +279,7 @@ class Scheduler:
 			
 	
 		for worker in self.workers:
-			print "Starting %s" %worker.name
+			print "Starting %s" %worker.wid
 			worker.start()
 
 		if self.mpi_rank == 0 or self.mpi_rank == None:
@@ -300,6 +300,7 @@ class Scheduler:
 
 			wid = opersmsg[0].wid
 			if wid not in self.waiting and opersmsg[0].request_task:
+				print "I'm %d and testing for pending tasks" %wid
 				if self.pending_tasks[wid] > 0:
 					self.pending_tasks[wid] -= 1
 				else:
