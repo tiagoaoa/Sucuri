@@ -75,11 +75,11 @@ class FilterTagged(Node): #produce operands in the form of TaggedValue, with the
         		opers = [Oper(workerid, None, None, None)]
         		self.sendops(opers, operq)
         		return 0
-
-		tag = args[0].tag
-		argvalues = [arg.value for arg in args]
+		print "AAAA %s" %(args)
+		tag = args[0].val.tag
+		argvalues = [arg.val.value for arg in args]
 		result = self.f(argvalues) 
-		opers = self.create_oper(TaggedValue(result, tag), workerid, operq, tag)
+		opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
 		
 		self.sendops(opers, operq)
 
@@ -94,7 +94,7 @@ class Feeder(Node):
 		print "Setting feeder affinity"
 
         def f(self):
-                print "Feeding %s" %self.value
+                #print "Feeding %s" %self.value
                 return self.value
 
 

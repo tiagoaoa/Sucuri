@@ -12,11 +12,11 @@ def filterprices(args):
 	filename = args[0]
 	base = open("inputs/" + filename, "r")
 
-	regexp = "R\$ [0-9]+\,[0-9]+"
+	regexp = "[0-9]+\.[0-9]+" #"R\$ [0-9]+\,[0-9]+"
 	for line in base:
 		for price in re.findall(regexp, line):
-			fprice = float(price.replace("R$ ", "").replace(",","."))
-			if fprice > 5:
+			fprice = float(price)#price.replace("R$ ", "").replace(",","."))
+			if fprice > 20.0:
 				#print "%s > 5" %fprice
 				prices+=[fprice]
 	print "%s %s" %(filename, len(prices))
