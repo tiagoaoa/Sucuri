@@ -10,7 +10,7 @@ class TaggedValue:
 		self.tag = tag
 		self.request_task = True
 	def __repr__(self):
-		return "(%d, %s)" %(self.tag, self.value)
+		return "TaggedValue: (%d, %s)" %(self.tag, self.value)
 
         def __cmp__(self, obj):
 		if obj == None:
@@ -75,12 +75,10 @@ class FilterTagged(Node): #produce operands in the form of TaggedValue, with the
         		opers = [Oper(workerid, None, None, None)]
         		self.sendops(opers, operq)
         		return 0
-		print "AAAA %s" %(args)
 		tag = args[0].val.tag
 		argvalues = [arg.val.value for arg in args]
 		result = self.f(argvalues) 
 		opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
-		
 		self.sendops(opers, operq)
 
 
@@ -112,22 +110,23 @@ class Serializer(Node):
 			opers = [Oper(workerid, None, None, None)]
 			self.sendops(opers, operq)
 			return 0
-		
-		#print "Got operand with tag %d (expecting %d) Worker %d" %(args[0].tag, self.next_tag, workerid)
+			
 		for (arg, argbuffer) in map(None, args, self.arg_buffer):
-			bisect.insort(argbuffer, arg)
+			bisect.insort(argbuffer, arg.val)
+			#print "Argbuffer %s" %argbuffer
+		#print "Got operand with tag %s (expecting %d) %s Worker %d" %([arg.val for arg in args], self.next_tag, [arg.val for arg in argbuffer], workerid)
 		if args[0].val.tag == self.next_tag:
 			next = self.next_tag
 			argbuffer = self.arg_buffer
-			buffertag = argbuffer[0][0].val.tag
+			buffertag = argbuffer[0][0].tag
 			while buffertag == next:
 				args = [arg.pop(0) for arg in argbuffer]
-				
-				opers = self.create_oper(self.f([arg.val for arg in args]), workerid, operq)
+				print "Sending oper with tag %d" %args[0].tag	
+				opers = self.create_oper(self.f([arg.value for arg in args]), workerid, operq)
 				self.sendops(opers, operq)
 				next += 1
 				if len(argbuffer[0]) > 0:
-					buffertag = argbuffer[0][0].val.tag
+					buffertag = argbuffer[0][0].tag
 				else:
 					buffertag = None
 

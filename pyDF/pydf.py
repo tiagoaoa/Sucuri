@@ -300,12 +300,11 @@ class Scheduler:
 
 			wid = opersmsg[0].wid
 			if wid not in self.waiting and opersmsg[0].request_task:
-				print "I'm %d and testing for pending tasks" %wid
 				if self.pending_tasks[wid] > 0:
 					self.pending_tasks[wid] -= 1
 				else:
 					self.waiting += [wid] #indicate that the worker is idle, waiting for a task
-
+				
 			while len(tasks) > 0 and len(self.waiting) > 0:
 				task = tasks.pop(0)
 				wid = self.check_affinity(task)
@@ -324,7 +323,7 @@ class Scheduler:
 				else:
 					task.workerid = wid
 					self.outqueue.put(task)
-
+			
 		print "Waiting %s" %self.waiting		
 		self.terminate_workers(self.workers)
 		
