@@ -20,10 +20,10 @@ def filterprices(args):
 				#print "%s > 5" %fprice
 				prices+=[fprice]
 	print "%s %s" %(filename, len(prices))
-	return len(prices)
+	return (filename, len(prices))
 
 def outprices(args):
-	print "Prices: %s" %args[0]
+	print "Output Prices: %s %d" %(args[0][0], args[0][1])
 
 graph = DFGraph()
 nprocs = int(sys.argv[1])
@@ -31,16 +31,16 @@ sched = Scheduler(graph, nprocs, mpi_enabled = False)
 
 src = Source(sorted(os.listdir("inputs")))
 
-filter = FilterTagged(filterprices, 1)
+fltr = FilterTagged(filterprices, 1)
 
 out = Serializer(outprices, 1)
 
 graph.add(src)
-graph.add(filter)
+graph.add(fltr)
 graph.add(out)
 
-src.add_edge(filter, 0)
-filter.add_edge(out, 0)
+src.add_edge(fltr, 0)
+fltr.add_edge(out, 0)
 
 
 sched.start()
