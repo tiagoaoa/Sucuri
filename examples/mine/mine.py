@@ -41,6 +41,6 @@ graph.add(out)
 
 src.add_edge(fltr, 0)
 fltr.add_edge(out, 0)
-
+fltr.pin([2,3])
 
 sched.start()

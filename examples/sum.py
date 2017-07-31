@@ -1,5 +1,8 @@
+import sys, os
+
+sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
-import sys
+
 
 def psum(args):
 
@@ -20,23 +23,12 @@ def sum_total(args):
 		total += partial
 	print "Reduction: %f" %total
 
-class Feeder(Node):
-
-	def __init__(self, value):
-		self.value = value
-		self.dsts = []
-		self.inport = []
-
-	def f(self):
-		print "Feedind %s" %self.value
-		return self.value
-
 
 nprocs = int(sys.argv[1])
 n = int(sys.argv[2])
 
 graph = DFGraph()
-sched = Scheduler(graph, nprocs, mpi_enabled = "False")
+sched = Scheduler(graph, nprocs, mpi_enabled = False)
 
 
 

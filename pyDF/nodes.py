@@ -103,7 +103,7 @@ class Serializer(Node):
 		self.next_tag = 0
 		self.arg_buffer = [[] for i in xrange(inputn)]
 		self.f = f
-		self.affinity = 0 #default affinity to Worker-0 (Serializer HAS to be pinned)
+		self.affinity = [0] #default affinity to Worker-0 (Serializer HAS to be pinned)
 
 	def run(self, args, workerid, operq):
 		if args[0] == None:

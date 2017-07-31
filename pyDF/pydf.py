@@ -241,8 +241,15 @@ class Scheduler:
 		if args != None:
 			self.issue(dst, args)
 	def check_affinity(self, task):
+		
 		node = self.graph.nodes[task.nodeid]
-		return node.affinity
+		if node.affinity == None:
+			return None
+
+		affinity = node.affinity[0]
+		if len(node.affinity) > 1:
+			node.affinity = node.affinity[1:] + [node.affinity[0]]
+		return affinity
 
 
 	def issue(self, node, args):
