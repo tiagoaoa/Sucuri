@@ -5,6 +5,9 @@ import bisect
 
 
 class TaggedValue(object):
+	"""
+	Wrapper used to communicate throght the graph.
+	"""
 	def __init__(self, value, tag):
 		self.value = value
 		self.tag = tag
@@ -26,8 +29,10 @@ class TaggedValue(object):
                         return 0
 
 
-class Source(Node): #source class
-
+class Source(Node):
+	"""
+	Source class
+	"""
         def __init__(self, it):
                 self.it = it
                 self.inport = []
@@ -55,13 +60,29 @@ class Source(Node): #source class
 
 
 class FlipFlop(Node):
+	"""
+	A node that tracks the last produced value.
+	"""
 	def __init__(self, f):
+		"""
+		:param f:
+			The operator function.
+		"""
 		self.f = f
 		self.inport = [[],[]]
 		self.dsts = []
 		self.affinity = None
 
 	def run(self, args, workerid, operq):
+		"""
+		Only propagates the value is it is not False.
+		:param args:
+			Parameters for the operator.
+		:param workerid:
+			Worker identification.
+		:param operq:
+			Operators queue.
+		"""
 		opers = self.create_oper(self.f([a.val for a in args]), workerid, operq)
 
 		if opers[0].val == False:
@@ -69,7 +90,10 @@ class FlipFlop(Node):
 		self.sendops(opers, operq)
 
 
-class FilterTagged(Node): #produce operands in the form of TaggedValue, with the same tag as the input
+class FilterTagged(Node):
+	"""
+	Produce operands in the form of TaggedValue, with the same tag as the input.
+	"""
 	def run(self, args, workerid, operq):
 		if args[0] == None:
         		opers = [Oper(workerid, None, None, None)]
@@ -83,7 +107,9 @@ class FilterTagged(Node): #produce operands in the form of TaggedValue, with the
 
 
 class Feeder(Node):
-
+	"""
+	A no processing node, it just provides a value to the operators.
+	"""
         def __init__(self, value):
                 self.value = value
                 self.dsts = []

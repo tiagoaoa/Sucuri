@@ -8,6 +8,10 @@ import sys
 
 
 class Worker(Process):
+	"""
+	Worker, an abstraction for a processing node.
+	Usually one-to-one for the number of processors.
+	"""
 	def __init__(self, graph, operand_queue, conn, workerid):
 		Process.__init__(self)		#since we are overriding the superclass's init method
 		#self.taskq = task_queue
@@ -42,11 +46,20 @@ class Task(object):
 
 
 class DFGraph(object):
+	"""
+	Dataflow graph.
+	"""
 	def __init__(self):
 		self.nodes = []
 		self.node_count = 0
 
 	def add(self, node):
+		"""
+		Adds a node to the dataflow graph.
+		Needs to be called to every node used before building the dependency graph.
+		:param node: Node
+			Node to be added to the graph.
+		"""
 		node.id = self.node_count
 		self.node_count += 1
 
@@ -54,6 +67,7 @@ class DFGraph(object):
 
 
 class Node(object):
+	"""Graph node"""
 	def __init__(self, f, inputn):
 		self.f = f
 		self.inport = [[] for i in range(inputn)]
@@ -61,12 +75,33 @@ class Node(object):
 		self.affinity = None
 
 	def add_edge(self, dst, dstport):
+		"""
+		Adds an edge to the node
+		:param dst: Node
+			The destination node.
+		:param dstport: int
+			The destination port on dst node.
+		"""
 		self.dsts += [(dst.id, dstport)]
 
 	def pin(self, workerid):
+		"""
+		Attachs this node to a specifc worker.
+		:param workerid: int
+			Worker id to be attached for.
+		"""
 		self.affinity = workerid
 
 	def run(self, args, workerid, operq):
+		"""
+		Calls the node operation.
+		:param args: List
+			Expected operands.
+		:param workerid: int
+			Worker id running the node.
+		:param operq:
+			Operation queue.
+		"""
 		# print "Running %s" %self
 		if len(self.inport) == 0:
 			opers = self.create_oper(self.f(), workerid, operq)
@@ -77,7 +112,16 @@ class Node(object):
 	def sendops(self, opers, operq):
 		operq.put(opers)
 
-	def create_oper(self, value, workerid, operq): #create operand message
+	def create_oper(self, value, workerid, operq):
+		"""
+		Create operand message
+		:param value:
+			Message content.
+		:param workerid:
+			Worker id running the node.
+		:param operq:
+			Operation queue.
+		"""
 		opers = []
 		if self.dsts == []:
 			opers.append(Oper(workerid, None, None, None)) #if no output is produced by the node, we still have to send a msg to the scheduler.
@@ -85,7 +129,7 @@ class Node(object):
 			for (dstid, dstport) in self.dsts:
 				oper = Oper(workerid, dstid, dstport, value)
 				opers.append(oper)
-				#print "Result produced %s (worker: %d)" %(oper.val, workerid)
+			#print "Result produced %s (worker: %d)" %(oper.val, workerid)
 		return opers
 
 	def match(self):
@@ -105,16 +149,25 @@ class Node(object):
 
 class Oper(object):
 	def __init__(self, prodid, dstid, dstport, val):
+		"""
+		Operand
+		:param prodid:
+			Id of the worker that produced the oper
+		:param dstid:
+			Id of the target task
+		:param dstport:
+			Input port of the target task
+		:param val:
+			actual value of the operand
+		"""
 		self.wid, self.dstid, self.dstport, self.val = prodid, dstid, dstport, val
-		#wid -> id of the worker that produced the oper
-		#dstid -> id of the target task
-		#dstport -> input port of the target task
-		#val -> actual value of the operand
-
 		self.request_task = True #if true, piggybacks a request for a task to the worker where the opers were produced.
 
 
 class Scheduler(object):
+	"""
+	Sucuri scheduler.
+	"""
 	TASK_TAG = 0
 	TERMINATE_TAG = 1
 
@@ -141,6 +194,9 @@ class Scheduler(object):
 			self.mpi_rank = None
 
 	def mpi_handle(self):
+		"""
+		MPI implementation for the dataflow.
+		"""
 		from mpi4py import MPI
 		comm = MPI.COMM_WORLD
 		rank = comm.Get_rank()
@@ -225,7 +281,6 @@ class Scheduler(object):
 			self.issue(dst, args)
 
 	def check_affinity(self, task):
-
 		node = self.graph.nodes[task.nodeid]
 		if node.affinity == None:
 			return None
