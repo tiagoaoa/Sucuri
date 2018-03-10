@@ -4,11 +4,12 @@ from pydf import *
 import bisect
 
 
-class TaggedValue:
+class TaggedValue(object):
 	def __init__(self, value, tag):
 		self.value = value
 		self.tag = tag
 		self.request_task = True
+
 	def __repr__(self):
 		return "TaggedValue: (%d, %s)" %(self.tag, self.value)
 
@@ -23,7 +24,6 @@ class TaggedValue:
                         return -1
                 else:
                         return 0
-
 
 
 class Source(Node): #source class
@@ -71,13 +71,13 @@ class FlipFlop(Node):
 
 class FilterTagged(Node): #produce operands in the form of TaggedValue, with the same tag as the input
 	def run(self, args, workerid, operq):
-		if args[0] == None:                               	
+		if args[0] == None:
         		opers = [Oper(workerid, None, None, None)]
         		self.sendops(opers, operq)
         		return 0
 		tag = args[0].val.tag
 		argvalues = [arg.val.value for arg in args]
-		result = self.f(argvalues) 
+		result = self.f(argvalues)
 		opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
 		self.sendops(opers, operq)
 
@@ -110,7 +110,7 @@ class Serializer(Node):
 			opers = [Oper(workerid, None, None, None)]
 			self.sendops(opers, operq)
 			return 0
-			
+
 		for (arg, argbuffer) in map(None, args, self.arg_buffer):
 			bisect.insort(argbuffer, arg.val)
 			#print "Argbuffer %s" %argbuffer
@@ -121,7 +121,7 @@ class Serializer(Node):
 			buffertag = argbuffer[0][0].tag
 			while buffertag == next:
 				args = [arg.pop(0) for arg in argbuffer]
-				print "Sending oper with tag %d" %args[0].tag	
+				print "Sending oper with tag %d" %args[0].tag
 				opers = self.create_oper(self.f([arg.value for arg in args]), workerid, operq)
 				self.sendops(opers, operq)
 				next += 1
@@ -131,5 +131,3 @@ class Serializer(Node):
 					buffertag = None
 
 			self.next_tag = next
-
-
