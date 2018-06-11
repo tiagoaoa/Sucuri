@@ -4,8 +4,6 @@
 from multiprocessing import Process, Queue, Value, Pipe
 import threading
 
-import sys
-
 
 class Worker(Process):
 	"""
@@ -13,7 +11,8 @@ class Worker(Process):
 	Usually one-to-one for the number of processors.
 	"""
 	def __init__(self, graph, operand_queue, conn, workerid):
-		Process.__init__(self)  # since we are overriding the superclass's init method
+		# since we are overriding the superclass's init method
+		super(Worker, self).__init__()
 		# self.taskq = task_queue
 		self.operq = operand_queue
 		self.idle = False
@@ -88,7 +87,7 @@ class Node(object):
 
 	def pin(self, workerid):
 		"""
-		Attachs this node to a specifc worker.
+		Attachs this node to a specific worker.
 		:param workerid: int
 			Worker id to be attached for.
 		"""
@@ -151,6 +150,9 @@ class Node(object):
 
 
 class Oper(object):
+	"""
+	Operand.
+	"""
 	def __init__(self, prodid, dstid, dstport, val):
 		"""
 		Operand
@@ -175,6 +177,14 @@ class Scheduler(object):
 	TERMINATE_TAG = 1
 
 	def __init__(self, graph, n_workers=1, mpi_enabled=True):
+		"""
+		:param graph: DFGraph
+			The dataflow graph.
+		:param n_workers: int
+			Number of workers used.
+		:param mpi_enabled:
+			Indicates if uses MPI or not.
+		"""
 		# self.taskq = Queue()  #queue where the ready tasks are inserted
 		self.operq = Queue()
 
@@ -281,12 +291,12 @@ class Scheduler(object):
 
 		dst.inport[oper.dstport] += [oper]
 		args = dst.match()
-		if args != None:
+		if args is not None:
 			self.issue(dst, args)
 
 	def check_affinity(self, task):
 		node = self.graph.nodes[task.nodeid]
-		if node.affinity == None:
+		if node.affinity is None:
 			return None
 
 		affinity = node.affinity[0]
@@ -317,6 +327,9 @@ class Scheduler(object):
 			worker.terminate()
 
 	def start(self):
+		"""
+		Starts the processing dataflow environment.
+		"""
 		operq = self.operq
 
 		print "Roots %s" % [r for r in self.graph.nodes if len(r.inport) == 0]
@@ -328,7 +341,7 @@ class Scheduler(object):
 			print "Starting %s" % worker.wid
 			worker.start()
 
-		if self.mpi_rank == 0 or self.mpi_rank == None:
+		if self.mpi_rank == 0 or self.mpi_rank is None:
 			# it this is the leader process or if mpi is not being used
 			print "Main loop"
 			self.main_loop()
@@ -340,7 +353,7 @@ class Scheduler(object):
 		while len(tasks) > 0 or not self.all_idle(self.workers) or operq.qsize() > 0:
 			opersmsg = operq.get()
 			for oper in opersmsg:
-				if oper.val != None:
+				if oper.val is not None:
 					self.propagate_op(oper)
 
 			wid = opersmsg[0].wid
@@ -353,7 +366,7 @@ class Scheduler(object):
 			while len(tasks) > 0 and len(self.waiting) > 0:
 				task = tasks.pop(0)
 				wid = self.check_affinity(task)
-				if wid != None:
+				if wid is not None:
 					if wid in self.waiting:
 						self.waiting.remove(wid)
 					else:

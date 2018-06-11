@@ -6,7 +6,7 @@ import bisect
 
 class TaggedValue(object):
 	"""
-	Wrapper used to communicate throght the graph.
+	Wrapper used to communicate through the graph.
 	"""
 	def __init__(self, value, tag):
 		self.value = value
@@ -17,7 +17,7 @@ class TaggedValue(object):
 		return "TaggedValue: (%d, %s)" % (self.tag, self.value)
 
 	def __cmp__(self, obj):
-		if obj == None:
+		if obj is None:
 			return 1
 		if not isinstance(obj, TaggedValue):
 			raise TypeError('can only compare TaggedValue with TaggedValue.')
@@ -95,7 +95,7 @@ class FilterTagged(Node):
 	Produce operands in the form of TaggedValue, with the same tag as the input.
 	"""
 	def run(self, args, workerid, operq):
-		if args[0] == None:
+		if args[0] is None:
 			opers = [Oper(workerid, None, None, None)]
 			self.sendops(opers, operq)
 			return 0
@@ -132,7 +132,7 @@ class Serializer(Node):
 		self.affinity = [0]  # default affinity to Worker-0 (Serializer HAS to be pinned)
 
 	def run(self, args, workerid, operq):
-		if args[0] == None:
+		if args[0] is None:
 			opers = [Oper(workerid, None, None, None)]
 			self.sendops(opers, operq)
 			return 0
