@@ -157,3 +157,31 @@ class Serializer(Node):
 					buffertag = None
 
 			self.next_tag = next
+
+
+class SelectOutputNode(Node):
+	"""
+	Node with selective output.
+	Node that allows you to select the output port.
+	The return value of the function must be a dictionary with the output gate ports and its values, like:
+	{ output_port_number0 : value0, output_port_number1 : value1 }
+	"""
+	def create_oper(self, value, workerid, operq):
+		"""
+		Create operand message
+		:param value:
+			Message content.
+		:param workerid:
+			Worker id running the node.
+		:param operq:
+			Operation queue.
+		"""
+		opers = []
+		if self.dsts == []:
+			# if no output is produced by the node, we still have to send a msg to the scheduler.
+			opers.append(Oper(workerid, None, None, None))
+		else:
+			for (dstid, dstport) in self.dsts:
+				if dstport in value or None in value:
+					opers.append(Oper(workerid, dstid, dstport, value[dstport]))
+		return opers
