@@ -184,4 +184,4 @@ class SelectOutputNode(Node):
 			for (dstid, dstport) in self.dsts:
 				if dstport in value or None in value:
 					opers.append(Oper(workerid, dstid, dstport, value[dstport]))
-		return opers if len(opers) == 0 else [Oper(workerid, None, None, None)]
+		return opers if len(opers) > 0 else [Oper(workerid, None, None, None)]
