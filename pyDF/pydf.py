@@ -124,7 +124,7 @@ class Node(object):
 			Operation queue.
 		"""
 		opers = []
-		if self.dsts == []:
+		if not self.dsts:
 			# if no output is produced by the node, we still have to send a msg to the scheduler.
 			opers.append(Oper(workerid, None, None, None))
 		else:

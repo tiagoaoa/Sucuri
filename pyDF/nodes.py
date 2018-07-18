@@ -166,6 +166,18 @@ class SelectOutputNode(Node):
 	The return value of the function must be a dictionary with the output gate ports and its values, like:
 	{ output_port_number0 : value0, output_port_number1 : value1 }
 	"""
+	def add_edge(self, dst, dstport, outport):
+		"""
+		Adds an edge to the node
+		:param dst: Node
+			The destination node.
+		:param dstport: int
+			The destination port on dst node.
+		:param outport: int
+			The output port on this node.
+		"""
+		self.dsts += [(dst.id, dstport, outport)]
+
 	def create_oper(self, value, workerid, operq):
 		"""
 		Create operand message
@@ -177,11 +189,11 @@ class SelectOutputNode(Node):
 			Operation queue.
 		"""
 		opers = []
-		if self.dsts == []:
+		if not self.dsts:
 			# if no output is produced by the node, we still have to send a msg to the scheduler.
 			opers.append(Oper(workerid, None, None, None))
 		else:
-			for (dstid, dstport) in self.dsts:
-				if dstport in value or None in value:
-					opers.append(Oper(workerid, dstid, dstport, value[dstport]))
-		return opers if len(opers) > 0 else [Oper(workerid, None, None, None)]
+			for (dstid, dstport, outport) in self.dsts:
+				if outport in value or None in value:
+					opers.append(Oper(workerid, dstid, dstport, value[outport]))
+		return opers if opers else [Oper(workerid, None, None, None)]
