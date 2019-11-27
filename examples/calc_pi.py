@@ -43,7 +43,6 @@ sched = Scheduler(graph, nprocs, mpi_enabled = False)
 
 R = Node(sum_total, nprocs)
 graph.add(R)
-S = []
 
 
 for i in range(nprocs):
