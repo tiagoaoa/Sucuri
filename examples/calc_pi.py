@@ -1,4 +1,5 @@
 import sys, os
+import time
 
 sys.path.append(os.environ['PYDFHOME'])
 from pyDF import *
@@ -16,9 +17,8 @@ def psum(args):
 
         x = stride * my_id
         while x < 1.0:
-            x += stride * nprocs 
             sump += f(x) * stride
-
+            x += stride * nprocs 
 
 	print "Finished partial summation %f"  %sump
 	return sump
@@ -56,9 +56,8 @@ for i in range(nprocs):
 	Spartial.add_edge(R, i)
 
 
-
+t0 = time.time()
 sched.start()
+t1 = time.time()
 
-
-
-
+print "Execution time %.3f" %(t1-t0)
