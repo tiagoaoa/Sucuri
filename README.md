@@ -1,6 +1,8 @@
 # Sucuri
 
-**Unless told otherwise, Sucuri-current is the repo you want**
+**Unless told otherwise, Sucuri-current is the repo you want, this one is being dropped soon.**
+
+
 Python Dataflow Programming Library
 
 Read the examples and the referenced papers as I do not have a written tutorial (yet).
