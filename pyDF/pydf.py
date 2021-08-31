@@ -184,10 +184,9 @@ class Scheduler:
                     task = outqueue.get()
                     if task != None: #task == None means termination
                         #print "MPI Sending task to slave node."
-                        dest = task.workerid / self.n_workers #destination mpi process
+                        dest = task.workerid // self.n_workers #destination mpi process
                         comm.send(task, dest = dest, tag = Scheduler.TASK_TAG)
                     else:
-
                         self.keep_working = False
                         mpi_terminate()
             def mpi_terminate():
