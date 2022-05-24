@@ -179,7 +179,7 @@ class Serializer(Node):
             buffertag = argbuffer[0][0].tag
             while buffertag == next:
                 args = [arg.pop(0) for arg in argbuffer]
-                print("Sending oper with tag {}".format(args[0].tag))	
+                #print("Sending oper with tag {}".format(args[0].tag))	
                 opers = self.create_oper(self.f([arg.value for arg in args]), workerid, operq)
                 self.sendops(opers, operq)
                 next += 1
