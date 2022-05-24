@@ -12,17 +12,34 @@ class TaggedValue:
     def __repr__(self):
         return "TaggedValue: ({}, {})".format(self.tag, self.value)
 
+    def __test_obj__(self, obj):
+        if not isinstance(obj, TaggedValue):
+            raise TypeError('can only compare TaggedValue with TaggedValue, but got {} and {}'.format(self, obj))
+
+
     def __cmp__(self, obj):
         if obj == None:
             return 1
-        if not isinstance(obj, TaggedValue):
-            raise TypeError('can only compare TaggedValue with TaggedValue.')
-        if self.tag > obj.tag:
-            return 1
-        elif self.tag < obj.tag:
-            return -1
-        else:
-            return 0
+        self.__test_obj__(obj)
+        return self.tag - obj.tag
+
+    def __lt__(self, obj):
+        return self.__cmp__(obj) < 0
+    def __gt__(self, obj):
+        return self.__cmp__(obj) > 0
+    
+    def __eq__(self, obj):
+        return self.__cmp__(obj) == 0
+    
+    def __le__(self, obj):
+        return self.__cmp__(obj) <= 0
+    def __ge__(self, obj):
+        return self.__cmp__(obj) >= 0
+    def __ne__(self, obj):
+        return self.__cmp__(obj) != 0
+
+
+
 
 
 
@@ -41,7 +58,7 @@ class Source(Node): #source class
             tag = self.tagcounter
             
             result = self.f(line, args)
-            print("Creating oper {}".format(result))
+            print("Creating oper {} A".format(result))
             opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
             for oper in opers:
                 oper.request_task = False
@@ -152,7 +169,7 @@ class Serializer(Node):
             self.sendops(opers, operq)
             return 0
 
-        for (arg, argbuffer) in map(None, args, self.arg_buffer):
+        for (arg, argbuffer) in zip(args, self.arg_buffer):
             bisect.insort(argbuffer, arg.val)
             #print "Argbuffer %s" %argbuffer
         #print "Got operand with tag %s (expecting %d) %s Worker %d" %([arg.val for arg in args], self.next_tag, [arg.val for arg in argbuffer], workerid)
