@@ -58,7 +58,7 @@ class Source(Node): #source class
             tag = self.tagcounter
             
             result = self.f(line, args)
-            print("Creating oper {} A".format(result))
+            #print("Creating oper {} A".format(result))
             opers = self.create_oper(TaggedValue(result, tag), workerid, operq)
             for oper in opers:
                 oper.request_task = False
