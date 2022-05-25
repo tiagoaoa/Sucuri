@@ -4,9 +4,9 @@ Python Dataflow Programming Library
 Read the examples and the referenced papers as I do not have a written tutorial (yet).
 
 
-This is the current repository for Sucuri, it supports both python 2.7.x and python 3.x.
+This is the current repository for Sucuri, python 2.7.x was dropped, so python 3.x is now *required*. 
 
-A completely new version with hierarchical distributed scheduling is on its way.
+A completely new version with hierarchical distributed scheduling and fault tolerance is on its way.
 
 
 - Tiago Alves <tiago@ime.uerj.br>
