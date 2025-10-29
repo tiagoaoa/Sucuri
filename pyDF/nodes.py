@@ -146,7 +146,6 @@ class Feeder(Node):
         self.dsts = []
         self.inport = []
         self.affinity = None
-        print("Setting feeder affinity")
 
     def f(self):
         #print "Feeding %s" %self.value
@@ -189,5 +188,4 @@ class Serializer(Node):
                     buffertag = None
 
             self.next_tag = next
-
 
