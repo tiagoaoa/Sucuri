@@ -190,7 +190,7 @@ def compute_lcs(
     return sink.result[-1]
 
 
-def lcs_block_python(
+def _compute_block(
     context: LCSContext,
     i: int,
     j: int,
@@ -231,6 +231,15 @@ def lcs_block_python(
     return bottom_row, right_column
 
 
+def lcs_block_python(
+    context: LCSContext,
+    i: int,
+    j: int,
+    inputs: List[List[int]],
+) -> Tuple[List[int], List[int]]:
+    return _compute_block(context, i, j, inputs)
+
+
 def _rust_arg_adapter(
     context: LCSContext,
     i: int,
@@ -255,12 +264,19 @@ def _rust_arg_adapter(
     )
 
 
-lcs_block_rust = rust(
+@rust(
     module="sucuri_lcs",
     func="lcs_block",
     paths=(_rust_search_path,),
     arg_adapter=_rust_arg_adapter,
-)(lcs_block_python)
+)
+def lcs_block_rust(
+    context: LCSContext,
+    i: int,
+    j: int,
+    inputs: List[List[int]],
+) -> Tuple[List[int], List[int]]:
+    return _compute_block(context, i, j, inputs)
 
 
 def read_sequence(path: Path) -> bytes:
