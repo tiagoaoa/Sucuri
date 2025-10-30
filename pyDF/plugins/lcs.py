@@ -70,20 +70,20 @@ def read_sequence(path: Path) -> bytes:
     return path.read_text().rstrip("\n").encode("utf-8")
 
 
-def _copy_vector(vec: Optional[Iterable[int]]) -> Optional[List[int]]:
+def copy_vector(vec: Optional[Iterable[int]]) -> Optional[List[int]]:
     if vec is None:
         return None
     return list(vec)
 
 
-def _unpack_inputs(i: int, j: int, inputs: List[List[int]]) -> Tuple[Optional[List[int]], Optional[List[int]]]:
+def unpack_inputs(i: int, j: int, inputs: List[List[int]]) -> Tuple[Optional[List[int]], Optional[List[int]]]:
     if i == 0 and j == 0:
         return None, None
     if i == 0:
-        return None, _copy_vector(inputs[0])
+        return None, copy_vector(inputs[0])
     if j == 0:
-        return _copy_vector(inputs[0]), None
-    return _copy_vector(inputs[0]), _copy_vector(inputs[1])
+        return copy_vector(inputs[0]), None
+    return copy_vector(inputs[0]), copy_vector(inputs[1])
 
 
 class LCSBlock(Node):
@@ -135,7 +135,7 @@ class ResultNode(Node):
         self.result: Optional[List[int]] = None
 
     def _store(self, values: List[List[int]]) -> None:
-        self.result = _copy_vector(values[0])
+        self.result = copy_vector(values[0])
         return None
 
 
@@ -192,7 +192,7 @@ def block_python(
     j: int,
     inputs: List[List[int]],
 ) -> Tuple[List[int], List[int]]:
-    north, west = _unpack_inputs(i, j, inputs)
+    north, west = unpack_inputs(i, j, inputs)
     start_a, end_a = context.bounds_a(j)
     start_b, end_b = context.bounds_b(i)
     width = end_a - start_a
@@ -203,7 +203,7 @@ def block_python(
     if north is not None:
         if len(north) != width + 1:
             raise ValueError("north border has invalid length")
-        matrix[0] = _copy_vector(north)
+        matrix[0] = copy_vector(north)
     if west is not None:
         if len(west) != height + 1:
             raise ValueError("west border has invalid length")
@@ -233,7 +233,7 @@ def _rust_arg_adapter(
     j: int,
     inputs: List[List[int]],
 ) -> Tuple[Tuple, dict]:
-    north, west = _unpack_inputs(i, j, inputs)
+    north, west = unpack_inputs(i, j, inputs)
     start_a, end_a = context.bounds_a(j)
     start_b, end_b = context.bounds_b(i)
     return (
@@ -299,6 +299,8 @@ def cli_main(block_fn, argv: Optional[List[str]] = None) -> int:
 
 __all__ = [
     "LCSContext",
+    "copy_vector",
+    "unpack_inputs",
     "block_python",
     "build_graph",
     "cli_main",

@@ -60,8 +60,9 @@ class LcsRustIntegrationTest(unittest.TestCase):
         return score, best
 
     def test_rust_matches_python_results(self) -> None:
+        python_backend = lcs_plugin_demo.lcs_block.__python_impl__
         for workers in (1, 4, 8):
-            python_score, _ = self.run_backend(workers, lcs.block_python)
+            python_score, _ = self.run_backend(workers, python_backend)
             rust_score, _ = self.run_backend(workers, lcs_plugin_demo.lcs_block)
             self.assertEqual(
                 python_score,
@@ -71,7 +72,8 @@ class LcsRustIntegrationTest(unittest.TestCase):
 
     def test_rust_speedup_scaling(self) -> None:
         # Warm both backends once to amortise import/initialisation costs.
-        self.run_backend(1, lcs.block_python)
+        python_backend = lcs_plugin_demo.lcs_block.__python_impl__
+        self.run_backend(1, python_backend)
         self.run_backend(1, lcs_plugin_demo.lcs_block)
 
         python_times = []
@@ -79,7 +81,7 @@ class LcsRustIntegrationTest(unittest.TestCase):
         worker_counts = list(range(1, 13))
 
         for workers in worker_counts:
-            _, python_time = self.run_backend(workers, lcs.block_python)
+            _, python_time = self.run_backend(workers, python_backend)
             _, rust_time = self.run_backend(workers, lcs_plugin_demo.lcs_block)
             python_times.append(python_time)
             rust_times.append(rust_time)

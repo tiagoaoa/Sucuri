@@ -37,7 +37,11 @@ class LcsPluginDemoTest(unittest.TestCase):
         self.assertTrue(getattr(lcs_plugin_demo.lcs_block, "__rust__", False))
 
     def test_rust_and_python_paths_agree(self) -> None:
-        python_score = lcs.compute(self.context, workers=2, compute_fn=lcs.block_python)
+        python_score = lcs.compute(
+            self.context,
+            workers=2,
+            compute_fn=lcs_plugin_demo.lcs_block.__python_impl__,
+        )
         rust_score = lcs.compute(self.context, workers=2, compute_fn=lcs_plugin_demo.lcs_block)
         self.assertEqual(python_score, rust_score)
 
