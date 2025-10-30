@@ -1,21 +1,14 @@
-"""Runtime glue for Rust-backed compute kernels.
-
-The :func:`rust` decorator keeps the public Python API intact while delegating
-heavy computation to an extension module when it is present.  Callers provide
-an ordinary Python implementation; at runtime the wrapper attempts to import
-the requested Rust module and, on success, forwards the call using optional
-argument/result adapters.  When the module is missing the original Python
-implementation is executed instead, so existing graphs continue to work.
-"""
+"""Runtime glue for Rust-backed compute kernels with plugin support."""
 
 from __future__ import annotations
 
 import importlib
 import os
 import sys
+from dataclasses import dataclass
 from functools import update_wrapper
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Tuple
+from typing import Any, Callable, Iterable, List, Optional, Protocol, Tuple
 
 RustArgAdapter = Callable[..., Tuple[Tuple[Any, ...], dict]]
 RustResultAdapter = Callable[[Any, Tuple[Any, ...], dict], Any]
@@ -29,26 +22,59 @@ def _default_result_adapter(result: Any, _args: Tuple[Any, ...], _kwargs: dict) 
     return result
 
 
+@dataclass(frozen=True)
+class RustConfig:
+    module: str
+    func: Optional[str] = None
+    paths: Tuple[Callable[[], Optional[Path]] | str | Path, ...] = ()
+    arg_adapter: Optional[RustArgAdapter] = None
+    result_adapter: Optional[RustResultAdapter] = None
+    eager: bool = False
+
+
+class RustPlugin(Protocol):
+    """Plugins provide configuration for the :func:`rust` decorator."""
+
+    def configure(self, python_impl: Callable[..., Any]) -> Optional[RustConfig]:
+        ...
+
+
+_PLUGINS: List[RustPlugin] = []
+_PLUGINS_LOADED = False
+
+
+def register_plugin(plugin: RustPlugin) -> None:
+    """Register a plugin that can supply :class:`RustConfig` objects."""
+
+    _PLUGINS.append(plugin)
+
+
+def _load_builtin_plugins() -> None:
+    global _PLUGINS_LOADED
+    if _PLUGINS_LOADED:
+        return
+    _PLUGINS_LOADED = True
+    try:
+        import pyDF.plugins  # noqa: F401  (triggers plugin registration)
+    except ModuleNotFoundError:
+        # Optional package; continue without built-ins.
+        _PLUGINS_LOADED = True
+
+
 class RustFunction:
     """Callable proxy that lazily resolves the Rust implementation."""
 
     def __init__(
         self,
         python_impl: Callable[..., Any],
-        module_name: str,
-        func_name: Optional[str] = None,
-        *,
-        paths: Optional[Iterable[Callable[[], Optional[Path]] | str | Path]] = None,
-        arg_adapter: Optional[RustArgAdapter] = None,
-        result_adapter: Optional[RustResultAdapter] = None,
-        eager: bool = False,
+        config: RustConfig,
     ) -> None:
         self.python_impl = python_impl
-        self.module_name = module_name
-        self.func_name = func_name or python_impl.__name__
-        self._paths = tuple(paths or ())
-        self._arg_adapter = arg_adapter or _default_arg_adapter
-        self._result_adapter = result_adapter or _default_result_adapter
+        self.module_name = config.module
+        self.func_name = config.func or python_impl.__name__
+        self._paths = tuple(config.paths or ())
+        self._arg_adapter = config.arg_adapter or _default_arg_adapter
+        self._result_adapter = config.result_adapter or _default_result_adapter
         self._callable: Optional[Callable[..., Any]] = None
         self._import_error: Optional[Exception] = None
 
@@ -57,7 +83,7 @@ class RustFunction:
         setattr(self, "__rust__", True)
         setattr(self, "__python_impl__", python_impl)
 
-        if eager:
+        if config.eager:
             self._load()
 
     # -- Public API -----------------------------------------------------
@@ -137,48 +163,78 @@ class RustFunction:
         return rust_callable
 
 
+def _config_from_kwargs(
+    python_impl: Callable[..., Any],
+    module: Optional[str],
+    func: Optional[str],
+    paths: Optional[Iterable[Callable[[], Optional[Path]] | str | Path]],
+    arg_adapter: Optional[RustArgAdapter],
+    result_adapter: Optional[RustResultAdapter],
+    eager: bool,
+) -> Optional[RustConfig]:
+    if module is None:
+        return None
+    return RustConfig(
+        module=module,
+        func=func,
+        paths=tuple(paths or ()),
+        arg_adapter=arg_adapter,
+        result_adapter=result_adapter,
+        eager=eager,
+    )
+
+
+def _config_from_plugins(python_impl: Callable[..., Any]) -> Optional[RustConfig]:
+    _load_builtin_plugins()
+    for plugin in _PLUGINS:
+        config = plugin.configure(python_impl)
+        if config is not None:
+            return config
+    return None
+
+
+def _apply_rust(
+    python_impl: Callable[..., Any],
+    module: Optional[str],
+    func: Optional[str],
+    paths: Optional[Iterable[Callable[[], Optional[Path]] | str | Path]],
+    arg_adapter: Optional[RustArgAdapter],
+    result_adapter: Optional[RustResultAdapter],
+    eager: bool,
+) -> RustFunction:
+    config = _config_from_kwargs(python_impl, module, func, paths, arg_adapter, result_adapter, eager)
+    if config is None:
+        config = _config_from_plugins(python_impl)
+    if config is None:
+        raise RuntimeError(
+            f"No Rust configuration found for {python_impl.__module__}.{python_impl.__name__}. "
+            "Provide parameters to @rust or register a plugin."
+        )
+    return RustFunction(python_impl, config)
+
+
 def rust(
-    module: str,
-    func: Optional[str] = None,
+    _func: Optional[Callable[..., Any]] = None,
     *,
+    module: Optional[str] = None,
+    func: Optional[str] = None,
     paths: Optional[Iterable[Callable[[], Optional[Path]] | str | Path]] = None,
     arg_adapter: Optional[RustArgAdapter] = None,
     result_adapter: Optional[RustResultAdapter] = None,
     eager: bool = False,
-) -> Callable[[Callable[..., Any]], RustFunction]:
+) -> Callable[[Callable[..., Any]], RustFunction] | RustFunction:
     """Decorate a Python implementation with an optional Rust fast path.
 
-    Parameters
-    ----------
-    module:
-        Name of the Python extension module produced by the Rust crate.
-    func:
-        Symbol to call inside the module.  Defaults to the wrapped function's
-        name.
-    paths:
-        Optional iterable of search paths (or callables returning paths) that
-        should be appended to ``sys.path`` before importing the module.
-    arg_adapter:
-        Callable that receives the original arguments and must return a pair
-        ``(args_tuple, kwargs_dict)`` describing how to invoke the Rust symbol.
-        When omitted the original arguments are forwarded unchanged.
-    result_adapter:
-        Callable invoked with ``(result, original_args, original_kwargs)`` to
-        translate the Rust return value back into the Python graph contract.
-    eager:
-        When ``True`` the module is imported during decoration rather than at
-        the first call, raising immediately if it cannot be loaded.
+    The decorator may be invoked either with configuration arguments or without
+    parameters to request automatic configuration via the plugin registry.
     """
 
+    if _func is not None and callable(_func):
+        if any(param is not None for param in (module, func, paths, arg_adapter, result_adapter)) or eager:
+            raise TypeError("Cannot pass configuration when using @rust without parentheses.")
+        return _apply_rust(_func, None, None, None, None, None, False)
+
     def decorator(python_impl: Callable[..., Any]) -> RustFunction:
-        return RustFunction(
-            python_impl,
-            module,
-            func_name=func,
-            paths=paths,
-            arg_adapter=arg_adapter,
-            result_adapter=result_adapter,
-            eager=eager,
-        )
+        return _apply_rust(python_impl, module, func, paths, arg_adapter, result_adapter, eager)
 
     return decorator
