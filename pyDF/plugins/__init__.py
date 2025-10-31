@@ -1,5 +1,3 @@
-"""Built-in Sucuri plugins."""
+"""Plugin namespace reserved for external integrations."""
 
-from . import lcs  # noqa: F401
-
-__all__ = ["lcs"]
+__all__ = []

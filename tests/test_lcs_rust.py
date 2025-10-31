@@ -9,8 +9,8 @@ import unittest
 from pathlib import Path
 from statistics import mean
 
+from examples.LCS import lcs_integration as lcs
 from examples.LCS import lcs_plugin_demo
-from pyDF.plugins import lcs
 
 
 class LcsRustIntegrationTest(unittest.TestCase):

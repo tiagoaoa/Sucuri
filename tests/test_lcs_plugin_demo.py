@@ -6,8 +6,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from examples.LCS import lcs_integration as lcs
 from examples.LCS import lcs_plugin_demo
-from pyDF.plugins import lcs
 
 
 class LcsPluginDemoTest(unittest.TestCase):

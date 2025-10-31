@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pyDF.integrations import rust
-from pyDF.plugins import lcs
+from examples.LCS import lcs_integration as lcs
 
 
 @rust
