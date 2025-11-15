@@ -16,7 +16,7 @@ A completely new version with hierarchical distributed scheduling and fault tole
 This branch tracks CPython **3.14**’s experimental no-GIL runtime and ships a local build under `./cpython/python`. All examples, benchmarks, and tests should be executed with that interpreter:
 
 ```bash
-./cpython/python -m unittest
+python -m unittest
 ```
 
 Thread scheduling inside `pyDF` benefits directly from the removal of the global interpreter lock, allowing worker threads to run truly concurrently while keeping the existing API intact.
