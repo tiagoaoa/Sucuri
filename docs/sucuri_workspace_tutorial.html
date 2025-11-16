@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sucuri Tutorial & Graph Lab — Workspace Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            color: #e0e0e0;
+        }
+        body {
+            background: #141414;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .dock {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d2d2d;
+            border: 2px solid #000;
+            border-top-color: #555;
+            border-left-color: #555;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            z-index: 10000;
+        }
+        .dock-icon {
+            width: 54px;
+            height: 54px;
+            background: #050505;
+            border: 2px solid #606060;
+            border-top-color: #181818;
+            border-left-color: #181818;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            color: #f0f0f0;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s ease;
+        }
+        .dock-icon:hover {
+            transform: scale(1.1);
+        }
+        .window {
+            position: absolute;
+            min-width: 360px;
+            min-height: 260px;
+            background: #242424;
+            border: 2px solid #000;
+            border-top-color: #5a5a5a;
+            border-left-color: #5a5a5a;
+            box-shadow: 4px 4px 18px rgba(0,0,0,0.75);
+            display: flex;
+            flex-direction: column;
+            z-index: 120;
+            border-radius: 4px;
+        }
+        .window.active {
+            border-top-color: #9f9f9f;
+            border-left-color: #9f9f9f;
+            z-index: 999;
+        }
+        .window.minimized {
+            display: none;
+        }
+        .title-bar {
+            background: linear-gradient(to bottom, #3b3b3b, #292929);
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #121212;
+            height: 28px;
+        }
+        .title-bar .title {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            color: #efefef;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .window-controls {
+            display: flex;
+            gap: 6px;
+        }
+        .window-btn {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .close-btn { background: #ff5f57; border-top-color: #ff8a80; border-left-color: #ff8a80; }
+        .minimize-btn { background: #ffbd2e; border-top-color: #ffe08c; border-left-color: #ffe08c; }
+        .maximize-btn { background: #28ca42; border-top-color: #6ced8a; border-left-color: #6ced8a; }
+        .window-content {
+            flex: 1;
+            padding: 16px;
+            overflow: auto;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 2px;
+            margin: 6px;
+            line-height: 1.7;
+        }
+        .window-content h1, .window-content h2, .window-content h3, .window-content h4 {
+            color: #fff;
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+        .window-content h1 { font-size: 26px; margin-top: 0; }
+        .window-content p { margin-bottom: 14px; color: #d4d4d4; }
+        .window-content ul, .window-content ol {
+            margin-left: 22px;
+            margin-bottom: 14px;
+        }
+        .window-content code {
+            font-family: "Courier New", monospace;
+            background: #111;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #0f0f0f;
+            padding: 14px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            overflow-x: auto;
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 18px;
+        }
+        th, td {
+            border: 1px solid #3d3d3d;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #333;
+            color: #fff;
+            font-weight: bold;
+        }
+        .note-textarea {
+            width: 100%;
+            height: 260px;
+            background: #101010;
+            color: #dcdcdc;
+            border: 1px solid #3c3c3c;
+            padding: 10px;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        .resize-handle {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 14px;
+            height: 14px;
+            cursor: se-resize;
+        }
+        .context-menu {
+            position: absolute;
+            background: #2d2d2d;
+            border: 2px solid #000;
+            border-top-color: #555;
+            border-left-color: #555;
+            box-shadow: 3px 3px 12px rgba(0,0,0,0.8);
+            z-index: 20000;
+            display: none;
+            min-width: 140px;
+        }
+        .context-menu-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+        }
+        .context-menu-item:hover {
+            background: #4da6ff;
+            color: #000;
+        }
+        .paper-content em {
+            color: #b5d5ff;
+        }
+        .graph-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+        .graph-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .graph-toolbar button {
+            background: #3c4c75;
+            color: #fff;
+            border: 1px solid #161a26;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .graph-toolbar button:hover {
+            background: #4d63a3;
+        }
+        .graph-toolbar .mode-indicator {
+            padding: 6px 10px;
+            background: #111922;
+            border: 1px solid #2c3d52;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .graph-main {
+            flex: 1;
+            display: flex;
+            border: 1px solid #323232;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #0c0c0c;
+            min-height: 320px;
+        }
+        .graph-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 220px;
+        }
+        .graph-pane.pane-left {
+            flex: 0 0 60%;
+        }
+        .graph-pane.pane-right {
+            flex: 0 0 40%;
+            background: #121212;
+            overflow: auto;
+        }
+        .pane-divider {
+            width: 8px;
+            background: linear-gradient(180deg, #1f1f1f, #0d0d0d);
+            cursor: col-resize;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+        }
+        .graph-area {
+            position: relative;
+            flex: 1;
+            min-height: 280px;
+            background: repeating-linear-gradient(90deg, #1b1f2a, #1b1f2a 28px, #151922 28px, #151922 56px),
+                        repeating-linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 28px, transparent 28px, transparent 56px);
+            border: 1px solid #323232;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .graph-area svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .nodes-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .graph-node {
+            position: absolute;
+            width: 140px;
+            min-height: 48px;
+            border-radius: 6px;
+            border: 2px solid #0c0c0c;
+            padding: 8px;
+            text-align: center;
+            cursor: grab;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            user-select: none;
+        }
+        .graph-node:active {
+            cursor: grabbing;
+        }
+        .graph-node.source { background: #2b6cb0; border-color: #174473; }
+        .graph-node.function { background: #38a169; border-color: #1b5c39; }
+        .graph-node.sink { background: #d97706; border-color: #8f4b00; }
+        .graph-node.has-code {
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
+        }
+        .graph-node.connecting {
+            outline: 3px dashed #fff;
+        }
+        .graph-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-left: 1px solid #242424;
+            padding: 16px;
+            overflow: auto;
+        }
+        .graph-info h4 {
+            margin: 0;
+            color: #f5f5f5;
+        }
+        .graph-info p {
+            margin: 0 0 6px 0;
+        }
+        .edge-list {
+            list-style: none;
+            margin-left: 0;
+            padding-left: 18px;
+        }
+        .edge-list li {
+            margin-bottom: 6px;
+            font-size: 14px;
+            position: relative;
+        }
+        .edge-list li::before {
+            content: "•";
+            position: absolute;
+            left: -14px;
+            color: #4da6ff;
+        }
+        .graph-code {
+            flex: 1;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #050505;
+            overflow: auto;
+            padding: 0;
+            max-height: 320px;
+        }
+        .graph-code code {
+            display: block;
+            padding: 12px 14px;
+            min-height: 120px;
+            white-space: pre;
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+        }
+        .code-token.keyword { color: #c586c0; }
+        .code-token.comment { color: #608b4e; font-style: italic; }
+        .code-token.string { color: #ce9178; }
+        .code-token.number { color: #b5cea8; }
+        .code-token.decorator { color: #9cdcfe; }
+        .note-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .note-actions button {
+            background: #4da6ff;
+            border: 1px solid #0e2236;
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .note-actions button:hover {
+            background: #72c1ff;
+        }
+        a.inline-link {
+            color: #75b2ff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dock">
+        <div class="dock-icon" onclick="openTutorial()">Tutor<br/>ial</div>
+        <div class="dock-icon" onclick="openGraphLab()">Graph<br/>Lab</div>
+        <div class="dock-icon" onclick="openReferences()">Refs</div>
+        <div class="dock-icon" onclick="createNote()">Notes</div>
+        <div class="dock-icon" onclick="minimizeAll()">Min<br/>All</div>
+        <div class="dock-icon" onclick="restoreAll()">Restore</div>
+    </div>
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" data-action="bring">Bring to Front</div>
+        <div class="context-menu-item" data-action="min">Minimize</div>
+        <div class="context-menu-item" data-action="close">Close</div>
+    </div>
+    <script>
+        (() => {
+            let windowCounter = 0;
+            let highestZ = 200;
+            let currentWindowId = null;
+            let dragState = null;
+            let resizeState = null;
+            const tutorialContent = `
+                <div class="paper-content">
+                    <h1>Sucuri Tutorial (Workspace Edition)</h1>
+                    <p>This tutorial distills the core ideas from <em>"A Minimalistic Dataflow Programming Library for Python"</em> and the live code you have in this repository. The GUI mirrors a retro multi-window desk so you can keep reading while sketching graphs and jotting implementation plans.</p>
+                    <h2>Why the paper still matters</h2>
+                    <p>The SBAC-PADW 2014 paper argued for a minimal set of abstractions that keeps dataflow programs ergonomic in Python while still running efficiently on shared-memory, distributed-memory, and hybrid clusters. Everything you see in <code>pyDF/</code> stays faithful to that thesis:</p>
+                    <ul>
+                        <li><strong>Deterministic parallelism.</strong> Workers pull ready tasks from the scheduler, but determinism is preserved through tagging and the <code>Serializer</code>.</li>
+                        <li><strong>Affinity &amp; MPI awareness.</strong> The <code>Scheduler</code> can pin nodes to processes and cooperate with MPI workers (see <code>Scheduler.mpi_handle</code> in <code>pyDF/pydf.py</code>).</li>
+                        <li><strong>Minimal primitives.</strong> <code>DFGraph</code>, <code>Node</code>, <code>Feeder</code>, <code>Source</code>, <code>Serializer</code>, and <code>FilterTagged</code> cover most pipelines.</li>
+                    </ul>
+                    <h2>Core building blocks from the repo</h2>
+                    <table>
+                        <tr><th>Concept</th><th>Where to read</th><th>What to notice</th></tr>
+                        <tr><td><code>DFGraph</code></td><td><code>pyDF/pydf.py</code></td><td>Stores nodes, assigns ids, the scheduler reads from it for every task.</td></tr>
+                        <tr><td><code>Node</code></td><td><code>pyDF/pydf.py</code></td><td>Implements <code>run</code>, <code>create_oper</code>, and affinity.</td></tr>
+                        <tr><td><code>TaggedValue</code></td><td><code>pyDF/nodes.py</code></td><td>Ordering primitive for streaming workloads.</td></tr>
+                        <tr><td><code>Serializer</code></td><td><code>pyDF/nodes.py</code></td><td>Pins to worker 0 by default to emit ordered results.</td></tr>
+                        <tr><td><code>Scheduler</code></td><td><code>pyDF/pydf.py</code></td><td>Launches workers, manages idle queues, integrates with MPI.</td></tr>
+                    </table>
+                    <h2>Smallest useful graph</h2>
+                    <p><code>examples/addition.py</code> is the literal "hello world" for Sucuri and maps one-to-one with the abstractions:</p>
+<pre><code class="language-python">from pyDF import *
+
+def soma(args):
+    a, b = args
+    print("Adding %d + %d" % (a, b))
+    return a + b
+
+graph = DFGraph()
+sched = Scheduler(graph, mpi_enabled=False)
+A = Feeder(1)
+B = Feeder(2)
+adder = Node(soma, 2)
+
+graph.add(A); graph.add(B); graph.add(adder)
+A.add_edge(adder, 0)
+B.add_edge(adder, 1)
+sched.start()</code></pre>
+                    <p>Every example follows the same recipe: wire sources/feeders to computational nodes, optionally serialize, then start the scheduler.</p>
+                    <h2>Streaming and tags</h2>
+                    <p>The <code>Source</code> node in <code>pyDF/nodes.py</code> emits <code>TaggedValue</code> objects so down-stream nodes can match their inputs by tag even when multiple workers produce them out of order. The <code>Serializer</code> keeps the sequence intact by inserting into sorted buffers.</p>
+                    <p>The <code>examples/pipeline.py</code> script combines a <code>Source</code> reading <code>text.txt</code> with a <code>Serializer</code> that prints each line again, proving that backpressure and tag alignment work without extra glue code.</p>
+                    <h2>Scheduler &amp; execution lifecycle</h2>
+                    <p><code>pyDF/pydf.py</code> shows that each <code>Worker</code> process requests a task by sending an empty <code>Oper</code>, executes the bound <code>Node</code>, and sends produced operands back through a queue. The master scheduler keeps a pending task counter per worker (to honor affinity) and can delegate tasks via MPI when <code>mpi_enabled=True</code>.</p>
+<pre><code class="language-python"># distilled from calc_pi.py
+nprocs = int(sys.argv[1])
+graph = DFGraph()
+sched = Scheduler(graph, nprocs, mpi_enabled=False)
+
+reducer = Node(sum_total, nprocs)
+graph.add(reducer)
+
+for i in range(nprocs):
+    stride_feed = Feeder([stride, i, nprocs])
+    worker = Node(psum, 1)
+    graph.add(stride_feed); graph.add(worker)
+    stride_feed.add_edge(worker, 0)
+    worker.add_edge(reducer, i)
+
+sched.start()</code></pre>
+                    <p>The <code>calc_pi</code> example under <code>examples/calc_pi.py</code> doubles as an integration test for affinity and fan-in: each partial sum node feeds a unique reducer port so the scheduler can fire the reduction task when all operands arrive.</p>
+                    <h2>Examples doubling as tests</h2>
+                    <ul>
+                        <li><strong><code>examples/numerical_integration/</code></strong>: contains pure PyDF, hybrid, and pure C orchestrations plus <code>run.sh</code>/<code>test.py</code> harnesses to profile tags under stress.</li>
+                        <li><strong><code>examples/TSPSucuri</code></strong>: demonstrates graph-template reuse for combinatorial search.</li>
+                        <li><strong><code>examples/videoStreamProcessing</code></strong>: dedicates pipelines to decode, filter, and encode frames, which stresses affinity pinning and serialization.</li>
+                        <li><strong><code>examples/matchtag.py</code></strong>: shows how <code>FilterTagged</code> matches operands by tag without draining the queues manually.</li>
+                    </ul>
+                    <p>Because the repo lacks a formal pytest suite, these scripts are the de facto regression tests. Run them often when modifying scheduler logic.</p>
+                    <h2>Working plan for a new pipeline</h2>
+                    <ol>
+                        <li>Sketch the dataflow graph (use the Graph Lab dock icon).</li>
+                        <li>Map each block to <code>Node</code>, <code>Source</code>, or <code>Serializer</code> instances. Keep deterministic ordering by tagging streams that might interleave.</li>
+                        <li>Decide worker counts and MPI usage early; call <code>Scheduler(graph, nprocs, mpi_enabled=True)</code> only when <code>mpi4py</code> is configured on the target environment.</li>
+                        <li>Instrument long-running nodes with logging: the <code>Worker</code> class prints its id, so you can correlate messages per worker.</li>
+                    </ol>
+                    <h2>Next steps</h2>
+                    <p>Use the Graph Lab to draft your next Sucuri pipeline, keep implementation snippets in the per-node editors, and spin up the provided examples for inspiration. This workspace remembers nothing by design—commit your artifacts into <code>docs/</code> or <code>examples/</code> once the prototype looks good.</p>
+                </div>
+            `;
+            const referenceContent = `
+                <div class="paper-content">
+                    <h1>Repo navigator</h1>
+                    <p>A rapid guide to the assets referenced by the tutorial:</p>
+                    <ul>
+                        <li><code>pyDF/pydf.py</code> — Worker, Scheduler, DFGraph, plain Nodes.</li>
+                        <li><code>pyDF/nodes.py</code> — Higher-level nodes: <code>Source</code>, <code>Feeder</code>, <code>FilterTagged</code>, <code>Serializer</code>, <code>FlipFlop</code>.</li>
+                        <li><code>examples/pipeline.py</code> — streaming text example with <code>Source</code> and <code>Serializer</code>.</li>
+                        <li><code>examples/calc_pi.py</code> — reduction tree over partial integrals.</li>
+                        <li><code>examples/mine/</code> &amp; <code>examples/TSPSucuri/</code> — show custom schedulers for search/mining workloads.</li>
+                        <li><code>examples/numerical_integration/</code> — stress test plus SWIG bindings.</li>
+                        <li><code>wservice/</code> — demonstration of exposing a Sucuri graph over a web interface.</li>
+                        <li><code>docs/sucuri-tutorial/index.html</code> — the static tutorial that complements this windowed version.</li>
+                    </ul>
+                    <p>Bookmark these paths while iterating on the graph. Drag this window where you need it and leave it open as a cheat sheet.</p>
+                </div>
+            `;
+            const notePlaceholder = `Scratchpad for Sucuri experiments:
+
+- jot scheduler tweaks
+- copy/paste snippets before keeping them
+- record graph-lab experiments`;
+            const contextMenu = document.getElementById('contextMenu');
+            function escapeHtml(str = '') {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+            const PY_KEYWORDS = [
+                'False','None','True','and','as','assert','async','await','break','class','continue','def','del','elif','else','except','finally','for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try','while','with','yield'
+            ];
+            const keywordRegex = new RegExp(`\\b(${PY_KEYWORDS.join('|')})\\b`, 'g');
+            function highlightPythonText(text = '') {
+                const placeholders = [];
+                let html = escapeHtml(text);
+                html = html.replace(/("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')/g, (match) => {
+                    const token = `<span class="code-token string">${match}</span>`;
+                    placeholders.push(token);
+                    return `__TOK${placeholders.length - 1}__`;
+                });
+                html = html.replace(/(#.*?$)/gm, (match) => {
+                    const token = `<span class="code-token comment">${match}</span>`;
+                    placeholders.push(token);
+                    return `__TOK${placeholders.length - 1}__`;
+                });
+                html = html.replace(keywordRegex, '<span class="code-token keyword">$1</span>');
+                html = html.replace(/\b(\d+(?:\.\d+)?|\.\d+)\b/g, '<span class="code-token number">$1</span>');
+                html = html.replace(/(@[A-Za-z_][A-Za-z0-9_]*)/g, '<span class="code-token decorator">$1</span>');
+                html = html.replace(/__TOK(\d+)__/g, (_, idx) => placeholders[idx] || '');
+                return html;
+            }
+            function applyPythonHighlight(el) {
+                if (!el) return;
+                const raw = el.dataset.rawCode || el.textContent;
+                el.dataset.rawCode = raw;
+                el.innerHTML = highlightPythonText(raw);
+            }
+            function refreshHighlights() {
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('code.language-python').forEach(applyPythonHighlight);
+                });
+            }
+            function createWindow({ title, content, width = 520, height = 380, x = 80, y = 80, windowType = '' }) {
+                const win = document.createElement('div');
+                win.className = 'window active';
+                win.id = `window-${++windowCounter}`;
+                win.style.left = `${x}px`;
+                win.style.top = `${y}px`;
+                win.style.width = `${width}px`;
+                win.style.height = `${height}px`;
+                if (windowType) {
+                    win.dataset.windowType = windowType;
+                }
+                const titleBar = document.createElement('div');
+                titleBar.className = 'title-bar';
+                const controls = document.createElement('div');
+                controls.className = 'window-controls';
+                const closeBtn = document.createElement('div');
+                closeBtn.className = 'window-btn close-btn';
+                closeBtn.title = 'Close';
+                const minBtn = document.createElement('div');
+                minBtn.className = 'window-btn minimize-btn';
+                minBtn.title = 'Minimize';
+                const maxBtn = document.createElement('div');
+                maxBtn.className = 'window-btn maximize-btn';
+                maxBtn.title = 'Toggle maximize';
+                controls.append(minBtn, maxBtn, closeBtn);
+                const titleEl = document.createElement('div');
+                titleEl.className = 'title';
+                titleEl.textContent = title;
+                titleBar.append(controls, titleEl);
+                const contentEl = document.createElement('div');
+                contentEl.className = 'window-content';
+                if (typeof content === 'string') {
+                    contentEl.innerHTML = content;
+                } else if (content instanceof HTMLElement) {
+                    contentEl.appendChild(content);
+                }
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'resize-handle';
+                win.append(titleBar, contentEl, resizeHandle);
+                document.body.appendChild(win);
+                activateWindow(win);
+                titleBar.addEventListener('mousedown', (event) => {
+                    if (event.target.classList.contains('window-btn')) return;
+                    startDrag(win, event);
+                });
+                closeBtn.addEventListener('click', () => closeWindow(win.id));
+                minBtn.addEventListener('click', () => minimizeWindow(win.id));
+                maxBtn.addEventListener('click', () => toggleMaximize(win.id));
+                resizeHandle.addEventListener('mousedown', (event) => {
+                    event.stopPropagation();
+                    startResize(win, event);
+                });
+                win.addEventListener('mousedown', () => activateWindow(win));
+                win.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    currentWindowId = win.id;
+                    showContextMenu(event.clientX, event.clientY);
+                });
+                refreshHighlights();
+                return win;
+            }
+            function activateWindow(win) {
+                document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+                win.classList.add('active');
+                highestZ += 1;
+                win.style.zIndex = highestZ;
+            }
+            function startDrag(win, event) {
+                dragState = {
+                    win,
+                    offsetX: event.clientX - win.offsetLeft,
+                    offsetY: event.clientY - win.offsetTop
+                };
+                document.addEventListener('mousemove', onDrag);
+                document.addEventListener('mouseup', stopDrag);
+            }
+            function onDrag(event) {
+                if (!dragState) return;
+                const { win, offsetX, offsetY } = dragState;
+                win.style.left = `${Math.max(0, event.clientX - offsetX)}px`;
+                win.style.top = `${Math.max(0, event.clientY - offsetY)}px`;
+            }
+            function stopDrag() {
+                document.removeEventListener('mousemove', onDrag);
+                document.removeEventListener('mouseup', stopDrag);
+                dragState = null;
+            }
+            function startResize(win, event) {
+                resizeState = {
+                    win,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    width: win.offsetWidth,
+                    height: win.offsetHeight
+                };
+                document.addEventListener('mousemove', onResize);
+                document.addEventListener('mouseup', stopResize);
+            }
+            function onResize(event) {
+                if (!resizeState) return;
+                const { win, startX, startY, width, height } = resizeState;
+                const deltaX = event.clientX - startX;
+                const deltaY = event.clientY - startY;
+                win.style.width = `${Math.max(320, width + deltaX)}px`;
+                win.style.height = `${Math.max(220, height + deltaY)}px`;
+            }
+            function stopResize() {
+                document.removeEventListener('mousemove', onResize);
+                document.removeEventListener('mouseup', stopResize);
+                resizeState = null;
+            }
+            function closeWindow(id) {
+                const win = document.getElementById(id);
+                if (!win) return;
+                const windowType = win.dataset.windowType || '';
+                win.remove();
+                if (windowType === 'graph') {
+                    graphLab.active = false;
+                    graphLab.nodesLayer = null;
+                    graphLab.graphArea = null;
+                    graphLab.svg = null;
+                    graphLab.connectionsEl = null;
+                    graphLab.codeOutput = null;
+                    graphLab.fileInput = null;
+                    graphLab.leftPane = null;
+                    graphLab.rightPane = null;
+                    graphLab.paneDivider = null;
+                    graphLab.clickTimer = null;
+                }
+            }
+            function minimizeWindow(id) {
+                const win = document.getElementById(id);
+                if (!win) return;
+                win.classList.add('minimized');
+            }
+            function restoreWindow(id) {
+                const win = document.getElementById(id);
+                if (!win) return;
+                win.classList.remove('minimized');
+                activateWindow(win);
+            }
+            function toggleMaximize(id) {
+                const win = document.getElementById(id);
+                if (!win) return;
+                if (win.dataset.maximized === 'true') {
+                    win.style.left = win.dataset.prevLeft;
+                    win.style.top = win.dataset.prevTop;
+                    win.style.width = win.dataset.prevWidth;
+                    win.style.height = win.dataset.prevHeight;
+                    win.dataset.maximized = 'false';
+                } else {
+                    win.dataset.prevLeft = win.style.left;
+                    win.dataset.prevTop = win.style.top;
+                    win.dataset.prevWidth = win.style.width;
+                    win.dataset.prevHeight = win.style.height;
+                    win.style.left = '10px';
+                    win.style.top = '10px';
+                    win.style.width = `${window.innerWidth - 40}px`;
+                    win.style.height = `${window.innerHeight - 60}px`;
+                    win.dataset.maximized = 'true';
+                }
+            }
+            function minimizeAll() {
+                document.querySelectorAll('.window').forEach(win => win.classList.add('minimized'));
+            }
+            function restoreAll() {
+                document.querySelectorAll('.window').forEach(win => {
+                    win.classList.remove('minimized');
+                    activateWindow(win);
+                });
+            }
+            function showContextMenu(x, y) {
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = `${x}px`;
+                contextMenu.style.top = `${y}px`;
+            }
+            document.addEventListener('click', () => {
+                contextMenu.style.display = 'none';
+            });
+            contextMenu.addEventListener('click', (event) => {
+                const action = event.target.dataset.action;
+                if (!currentWindowId || !action) return;
+                if (action === 'bring') {
+                const win = document.getElementById(currentWindowId);
+                if (win) activateWindow(win);
+                } else if (action === 'min') {
+                    minimizeWindow(currentWindowId);
+                } else if (action === 'close') {
+                    closeWindow(currentWindowId);
+                }
+                contextMenu.style.display = 'none';
+            });
+            let noteCounter = 0;
+            function createNote() {
+                const noteArea = document.createElement('textarea');
+                noteArea.className = 'note-textarea';
+                noteArea.value = notePlaceholder;
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(noteArea);
+                const actions = document.createElement('div');
+                actions.className = 'note-actions';
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = 'Clear';
+                clearBtn.addEventListener('click', () => noteArea.value = '');
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = 'Copy to clipboard';
+                copyBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(noteArea.value);
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => copyBtn.textContent = 'Copy to clipboard', 1200);
+                    } catch (err) {
+                        copyBtn.textContent = 'Clipboard blocked';
+                        setTimeout(() => copyBtn.textContent = 'Copy to clipboard', 1500);
+                    }
+                });
+                actions.append(clearBtn, copyBtn);
+                wrapper.appendChild(actions);
+                createWindow({
+                    title: `Notes ${++noteCounter}`,
+                    content: wrapper,
+                    width: 420,
+                    height: 360,
+                    x: 160 + noteCounter * 20,
+                    y: 140 + noteCounter * 20,
+                    windowType: `note-${noteCounter}`
+                });
+            }
+            function openTutorial() {
+                const existing = document.querySelector('.window[data-window-type="tutorial"]');
+                if (existing) {
+                    restoreWindow(existing.id);
+                    activateWindow(existing);
+                    return;
+                }
+                createWindow({
+                    title: 'Sucuri Tutorial',
+                    content: tutorialContent,
+                    width: 680,
+                    height: 520,
+                    x: 120,
+                    y: 60,
+                    windowType: 'tutorial'
+                });
+            }
+            function openReferences() {
+                const existing = document.querySelector('.window[data-window-type="references"]');
+                if (existing) {
+                    restoreWindow(existing.id);
+                    activateWindow(existing);
+                    return;
+                }
+                createWindow({
+                    title: 'Repo References',
+                    content: referenceContent,
+                    width: 480,
+                    height: 420,
+                    x: 220,
+                    y: 150,
+                    windowType: 'references'
+                });
+            }
+            const graphLab = {
+                nodes: [],
+                edges: [],
+                connectMode: false,
+                pendingConnection: null,
+                dragInfo: null,
+                connectionsEl: null,
+                codeOutput: null,
+                fileInput: null,
+                graphArea: null,
+                svg: null,
+                nodesLayer: null,
+                nextId: 1,
+                modeIndicator: null,
+                leftPane: null,
+                rightPane: null,
+                paneDivider: null,
+                paneDrag: null,
+                clickTimer: null,
+                history: [],
+                redoStack: [],
+                active: false,
+                isRestoring: false,
+                historyLimit: 50
+            };
+            const defaultSnippets = {
+                Source: 'def source_emit():\n    # produce or fetch a value\n    return None',
+                Function: 'def transform(args):\n    value = args[0]\n    return value',
+                Sink: 'def consume(args):\n    value = args[0]\n    print(value)\n    return value'
+            };
+            function openGraphLab() {
+                const existing = document.querySelector('.window[data-window-type="graph"]');
+                if (existing) {
+                    restoreWindow(existing.id);
+                    activateWindow(existing);
+                    return;
+                }
+                const content = document.createElement('div');
+                content.className = 'graph-builder';
+                content.innerHTML = `
+                    <div class="graph-toolbar">
+                        <button data-action="new-graph">New</button>
+                        <button data-action="save-graph">Save</button>
+                        <button data-action="open-graph">Open</button>
+                        <button data-node-type="Source">Add Source</button>
+                        <button data-node-type="Function">Add Function</button>
+                        <button data-node-type="Sink">Add Sink</button>
+                        <button data-action="toggle-connect">Toggle Connect Mode</button>
+                        <button data-action="generate-code">Generate Code</button>
+                        <span class="mode-indicator">Connect mode: off</span>
+                    </div>
+                    <input type="file" class="graph-file-input" accept="application/json" style="display:none"/>
+                    <div class="graph-main">
+                        <div class="graph-pane pane-left">
+                            <div class="graph-area">
+                                <svg class="graph-svg"></svg>
+                                <div class="nodes-layer"></div>
+                            </div>
+                        </div>
+                        <div class="pane-divider" title="Drag to resize panes"></div>
+                        <div class="graph-pane pane-right">
+                            <div class="graph-info">
+                                <h4>Edges &amp; layout</h4>
+                                <ul class="edge-list"></ul>
+                                <p>Click nodes to edit their Sucuri function stub. Enable connect mode, click a source node, then click the downstream node to draw directed edges. Drag nodes to rearrange the layout. Use the divider to choose how much room each pane gets.</p>
+                                <h4>Generated Python</h4>
+                                <pre class="graph-code"><code class="language-python"># Click Generate Code to produce a runnable Sucuri graph.</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const win = createWindow({
+                    title: 'Sucuri Graph Lab',
+                    content,
+                    width: 1152,
+                    height: 704,
+                    x: 280,
+                    y: 80,
+                    windowType: 'graph'
+                });
+                setupGraphLab(content);
+                return win;
+            }
+            function setupGraphLab(content) {
+                graphLab.nodes = [];
+                graphLab.edges = [];
+                graphLab.pendingConnection = null;
+                graphLab.graphArea = content.querySelector('.graph-area');
+                graphLab.svg = content.querySelector('svg');
+                graphLab.nodesLayer = content.querySelector('.nodes-layer');
+                graphLab.connectionsEl = content.querySelector('.edge-list');
+                graphLab.codeOutput = content.querySelector('.graph-code code');
+                graphLab.fileInput = content.querySelector('.graph-file-input');
+                graphLab.modeIndicator = content.querySelector('.mode-indicator');
+                graphLab.leftPane = content.querySelector('.pane-left');
+                graphLab.rightPane = content.querySelector('.pane-right');
+                graphLab.paneDivider = content.querySelector('.pane-divider');
+                graphLab.modeIndicator.textContent = 'Connect mode: off';
+                graphLab.connectMode = false;
+                content.querySelectorAll('button[data-node-type]').forEach(btn => {
+                    btn.addEventListener('click', () => addGraphNode(btn.dataset.nodeType));
+                });
+                content.querySelector('button[data-action="new-graph"]').addEventListener('click', newGraph);
+                content.querySelector('button[data-action="save-graph"]').addEventListener('click', saveGraphToFile);
+                content.querySelector('button[data-action="open-graph"]').addEventListener('click', openGraphFromFile);
+                content.querySelector('button[data-action="toggle-connect"]').addEventListener('click', toggleConnectMode);
+                content.querySelector('button[data-action="generate-code"]').addEventListener('click', generateGraphPython);
+                graphLab.graphArea.addEventListener('click', (event) => {
+                    if (event.target === graphLab.graphArea) {
+                        clearPendingConnection();
+                    }
+                });
+                initPaneDivider();
+                if (graphLab.fileInput) {
+                    graphLab.fileInput.addEventListener('change', handleGraphFileSelection);
+                }
+                graphLab.history = [];
+                graphLab.redoStack = [];
+                graphLab.active = true;
+                graphLab.isRestoring = false;
+                loadDefaultPipeline();
+                requestAnimationFrame(generateGraphPython);
+            }
+            function initPaneDivider() {
+                if (!graphLab.paneDivider || !graphLab.leftPane || !graphLab.rightPane) return;
+                graphLab.paneDivider.addEventListener('mousedown', (event) => {
+                    event.preventDefault();
+                    graphLab.paneDrag = {
+                        startX: event.clientX,
+                        startLeftWidth: graphLab.leftPane.getBoundingClientRect().width,
+                        containerWidth: graphLab.paneDivider.parentElement.getBoundingClientRect().width
+                    };
+                    document.addEventListener('mousemove', onPaneDrag);
+                    document.addEventListener('mouseup', stopPaneDrag);
+                });
+            }
+            function onPaneDrag(event) {
+                if (!graphLab.paneDrag) return;
+                const drag = graphLab.paneDrag;
+                const delta = event.clientX - drag.startX;
+                const minWidth = drag.containerWidth * 0.25;
+                const maxWidth = drag.containerWidth * 0.75;
+                let newWidth = drag.startLeftWidth + delta;
+                newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+                const leftPercent = (newWidth / drag.containerWidth) * 100;
+                graphLab.leftPane.style.flex = `0 0 ${leftPercent}%`;
+                graphLab.rightPane.style.flex = `0 0 ${100 - leftPercent}%`;
+                renderEdges();
+            }
+            function stopPaneDrag() {
+                document.removeEventListener('mousemove', onPaneDrag);
+                document.removeEventListener('mouseup', stopPaneDrag);
+                graphLab.paneDrag = null;
+            }
+            function confirmDestructiveAction() {
+                if (!graphLab.nodes || graphLab.nodes.length === 0) return true;
+                return window.confirm('This will discard the current graph. Continue?');
+            }
+            function newGraph() {
+                if (!confirmDestructiveAction()) return;
+                loadDefaultPipeline();
+            }
+            function loadDefaultPipeline() {
+                if (!graphLab.nodesLayer) return;
+                const sampleNodes = [
+                    {
+                        id: 'node-1',
+                        type: 'Source',
+                        label: 'Source: Reader',
+                        x: 260,
+                        y: 60,
+                        code: 'def read_lines():\n    with open("text.txt") as fp:\n        for line in fp:\n            yield line.strip()',
+                        hasCustomCode: true
+                    },
+                    {
+                        id: 'node-2',
+                        type: 'Function',
+                        label: 'Function: Normalize',
+                        x: 260,
+                        y: 200,
+                        code: 'def normalize(args):\n    line = args[0]\n    return line.lower()',
+                        hasCustomCode: true
+                    },
+                    {
+                        id: 'node-3',
+                        type: 'Sink',
+                        label: 'Sink: Printer',
+                        x: 260,
+                        y: 340,
+                        code: 'def print_line(args):\n    value = args[0]\n    print(value)\n    return value',
+                        hasCustomCode: true
+                    }
+                ];
+                const defaultEdges = [
+                    { id: 'edge-node-1-node-2', from: 'node-1', to: 'node-2' },
+                    { id: 'edge-node-2-node-3', from: 'node-2', to: 'node-3' }
+                ];
+                applyGraphSnapshot({
+                    nodes: sampleNodes,
+                    edges: defaultEdges,
+                    nextId: sampleNodes.length + 1
+                });
+                graphLab.history = [];
+                graphLab.redoStack = [];
+                pushHistory();
+            }
+            function saveGraphToFile() {
+                const snapshot = getGraphSnapshot();
+                snapshot.version = 1;
+                const json = JSON.stringify(snapshot, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sucuri-graph.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            }
+            function openGraphFromFile() {
+                if (!graphLab.fileInput) return;
+                if (!confirmDestructiveAction()) return;
+                graphLab.fileInput.click();
+            }
+            function handleGraphFileSelection(event) {
+                const file = event.target.files && event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+                            throw new Error('Invalid graph file');
+                        }
+                        applyGraphSnapshot(data);
+                        graphLab.history = [];
+                        graphLab.redoStack = [];
+                        pushHistory();
+                    } catch (err) {
+                        alert(`Unable to load graph: ${err.message}`);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+            function attachNodeElement(node) {
+                if (!graphLab.nodesLayer) return;
+                const el = document.createElement('div');
+                el.className = `graph-node ${node.type.toLowerCase()}`;
+                el.textContent = node.label;
+                el.dataset.nodeId = node.id;
+                el.addEventListener('mousedown', onGraphNodeMouseDown);
+                el.addEventListener('mouseup', onGraphNodeMouseUp);
+                graphLab.nodesLayer.appendChild(el);
+                node.el = el;
+                if (node.hasCustomCode) {
+                    el.classList.add('has-code');
+                }
+                positionNode(node);
+            }
+            function getGraphSnapshot() {
+                return {
+                    nodes: graphLab.nodes.map(node => ({
+                        id: node.id,
+                        type: node.type,
+                        label: node.label,
+                        x: node.x,
+                        y: node.y,
+                        code: node.code || '',
+                        hasCustomCode: !!node.hasCustomCode
+                    })),
+                    edges: graphLab.edges.map(edge => ({ ...edge })),
+                    nextId: graphLab.nextId
+                };
+            }
+            function applyGraphSnapshot(snapshot = {}) {
+                if (!graphLab.nodesLayer || !graphLab.svg) return;
+                graphLab.isRestoring = true;
+                graphLab.pendingConnection = null;
+                graphLab.dragInfo = null;
+                graphLab.nodesLayer.innerHTML = '';
+                graphLab.svg.innerHTML = '';
+                graphLab.nodes = (snapshot.nodes || []).map(data => {
+                    const node = {
+                        id: data.id,
+                        type: data.type,
+                        label: data.label,
+                        x: data.x,
+                        y: data.y,
+                        code: data.code || '',
+                        hasCustomCode: !!data.hasCustomCode
+                    };
+                    attachNodeElement(node);
+                    return node;
+                });
+                graphLab.edges = (snapshot.edges || []).map(edge => ({ ...edge }));
+                graphLab.nextId = snapshot.nextId || (graphLab.nodes.length + 1);
+                graphLab.isRestoring = false;
+                renderEdges();
+                refreshEdgeList();
+            }
+            function pushHistory() {
+                if (graphLab.isRestoring || !graphLab.history || !graphLab.nodesLayer) return;
+                const snapshot = getGraphSnapshot();
+                const signature = JSON.stringify(snapshot);
+                const last = graphLab.history[graphLab.history.length - 1];
+                if (last && last.signature === signature) return;
+                snapshot.signature = signature;
+                graphLab.history.push(snapshot);
+                if (graphLab.history.length > graphLab.historyLimit) {
+                    graphLab.history.shift();
+                }
+                graphLab.redoStack = [];
+            }
+            function undoGraph() {
+                if (!graphLab.history || graphLab.history.length <= 1) return;
+                const current = graphLab.history.pop();
+                if (current) {
+                    graphLab.redoStack.push(current);
+                }
+                const previous = graphLab.history[graphLab.history.length - 1];
+                if (previous) {
+                    applyGraphSnapshot(previous);
+                }
+            }
+            function redoGraph() {
+                if (!graphLab.redoStack || graphLab.redoStack.length === 0) return;
+                const snapshot = graphLab.redoStack.pop();
+                if (!snapshot) return;
+                graphLab.history.push(snapshot);
+                if (graphLab.history.length > graphLab.historyLimit) {
+                    graphLab.history.shift();
+                }
+                applyGraphSnapshot(snapshot);
+            }
+            function addGraphNode(type) {
+                const node = {
+                    id: `node-${graphLab.nextId++}`,
+                    type,
+                    label: `${type} ${graphLab.nextId - 1}`,
+                    x: 40 + Math.random() * 420,
+                    y: 40 + Math.random() * 220,
+                    code: defaultSnippets[type] || '',
+                    hasCustomCode: false
+                };
+                graphLab.nodes.push(node);
+                attachNodeElement(node);
+                pushHistory();
+            }
+            function renameGraphNode(nodeId, newName) {
+                const node = graphLab.nodes.find(n => n.id === nodeId);
+                if (!node) return;
+                let targetName = typeof newName === 'string' ? newName : prompt('Rename node', node.label);
+                if (targetName === null || targetName === undefined) return;
+                targetName = targetName.trim();
+                if (!targetName) return;
+                node.label = targetName;
+                if (node.el) {
+                    node.el.textContent = node.label;
+                }
+                refreshEdgeList();
+                pushHistory();
+                return node.label;
+            }
+            function positionNode(node) {
+                node.el.style.left = `${node.x}px`;
+                node.el.style.top = `${node.y}px`;
+            }
+            function onGraphNodeMouseDown(event) {
+                if (event.button !== 0) return;
+                const nodeId = event.currentTarget.dataset.nodeId;
+                graphLab.dragInfo = {
+                    nodeId,
+                    offsetX: event.offsetX,
+                    offsetY: event.offsetY,
+                    moved: false
+                };
+                document.addEventListener('mousemove', onGraphNodeMouseMove);
+                document.addEventListener('mouseup', cancelGraphDrag);
+            }
+            function onGraphNodeMouseMove(event) {
+                if (!graphLab.dragInfo) return;
+                const { nodeId, offsetX, offsetY } = graphLab.dragInfo;
+                const node = graphLab.nodes.find(n => n.id === nodeId);
+                if (!node) return;
+                graphLab.dragInfo.moved = true;
+                const bounds = graphLab.graphArea.getBoundingClientRect();
+                node.x = Math.max(0, Math.min(bounds.width - 140, event.clientX - bounds.left - offsetX));
+                node.y = Math.max(0, Math.min(bounds.height - 48, event.clientY - bounds.top - offsetY));
+                positionNode(node);
+                renderEdges();
+            }
+            function cancelGraphDrag() {
+                document.removeEventListener('mousemove', onGraphNodeMouseMove);
+                document.removeEventListener('mouseup', cancelGraphDrag);
+            }
+            function onGraphNodeMouseUp(event) {
+                document.removeEventListener('mousemove', onGraphNodeMouseMove);
+                document.removeEventListener('mouseup', cancelGraphDrag);
+                if (!graphLab.dragInfo) return;
+                const { nodeId, moved } = graphLab.dragInfo;
+                graphLab.dragInfo = null;
+                if (moved) {
+                    pushHistory();
+                } else {
+                    clearTimeout(graphLab.clickTimer);
+                    if (event.detail >= 2) {
+                        renameGraphNode(nodeId);
+                    } else {
+                        graphLab.clickTimer = setTimeout(() => {
+                            handleGraphNodeClick(nodeId);
+                        }, 200);
+                    }
+                }
+            }
+            function handleGraphNodeClick(nodeId) {
+                const node = graphLab.nodes.find(n => n.id === nodeId);
+                if (!node) return;
+                if (graphLab.connectMode) {
+                    if (!graphLab.pendingConnection) {
+                        graphLab.pendingConnection = node;
+                        node.el.classList.add('connecting');
+                    } else if (graphLab.pendingConnection.id !== node.id) {
+                        graphLab.pendingConnection.el.classList.remove('connecting');
+                        const existingEdge = graphLab.edges.some(edge => edge.from === graphLab.pendingConnection.id && edge.to === node.id);
+                        if (!existingEdge) {
+                            graphLab.edges.push({
+                                id: `edge-${graphLab.pendingConnection.id}-${node.id}`,
+                                from: graphLab.pendingConnection.id,
+                                to: node.id
+                            });
+                        }
+                        graphLab.pendingConnection = null;
+                        renderEdges();
+                        refreshEdgeList();
+                        pushHistory();
+                    }
+                    return;
+                }
+                openNodeEditor(node);
+            }
+            function toggleConnectMode() {
+                graphLab.connectMode = !graphLab.connectMode;
+                graphLab.modeIndicator.textContent = `Connect mode: ${graphLab.connectMode ? 'on' : 'off'}`;
+                if (!graphLab.connectMode) {
+                    clearPendingConnection();
+                }
+            }
+            function clearPendingConnection() {
+                if (graphLab.pendingConnection) {
+                    graphLab.pendingConnection.el.classList.remove('connecting');
+                }
+                graphLab.pendingConnection = null;
+            }
+            function renderEdges() {
+                if (!graphLab.svg) return;
+                graphLab.svg.innerHTML = '';
+                const parentRect = graphLab.nodesLayer.getBoundingClientRect();
+                graphLab.edges.forEach(edge => {
+                    const from = graphLab.nodes.find(n => n.id === edge.from);
+                    const to = graphLab.nodes.find(n => n.id === edge.to);
+                    if (!from || !to) return;
+                    const fromRect = from.el.getBoundingClientRect();
+                    const toRect = to.el.getBoundingClientRect();
+                    const centerStart = {
+                        x: fromRect.left - parentRect.left + fromRect.width / 2,
+                        y: fromRect.top - parentRect.top + fromRect.height / 2
+                    };
+                    const centerEnd = {
+                        x: toRect.left - parentRect.left + toRect.width / 2,
+                        y: toRect.top - parentRect.top + toRect.height / 2
+                    };
+                    let dx = centerEnd.x - centerStart.x;
+                    let dy = centerEnd.y - centerStart.y;
+                    let len = Math.hypot(dx, dy);
+                    if (len < 4) {
+                        len = 4;
+                        dx = 1;
+                        dy = 0;
+                    }
+                    const ux = dx / len;
+                    const uy = dy / len;
+                    const startOffset = Math.max(Math.min(fromRect.width, fromRect.height) / 2 - 6, 6);
+                    const endOffset = Math.max(Math.min(toRect.width, toRect.height) / 2 + 4, 8);
+                    const safeLength = Math.max(len - startOffset - endOffset, 20);
+                    const startX = centerStart.x + ux * startOffset;
+                    const startY = centerStart.y + uy * startOffset;
+                    const endX = startX + ux * safeLength;
+                    const endY = startY + uy * safeLength;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', endX);
+                    line.setAttribute('y2', endY);
+                    line.setAttribute('stroke', '#8ed0ff');
+                    line.setAttribute('stroke-width', '3');
+                    line.setAttribute('stroke-linecap', 'round');
+                    graphLab.svg.appendChild(line);
+                    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const arrowLength = 16;
+                    const arrowWidth = 12;
+                    const tipX = endX;
+                    const tipY = endY;
+                    const baseX = tipX - ux * arrowLength;
+                    const baseY = tipY - uy * arrowLength;
+                    const perpX = -uy;
+                    const perpY = ux;
+                    const leftX = baseX + perpX * (arrowWidth / 2);
+                    const leftY = baseY + perpY * (arrowWidth / 2);
+                    const rightX = baseX - perpX * (arrowWidth / 2);
+                    const rightY = baseY - perpY * (arrowWidth / 2);
+                    arrow.setAttribute('d', `M${tipX},${tipY} L${leftX},${leftY} L${rightX},${rightY} Z`);
+                    arrow.setAttribute('fill', '#8ed0ff');
+                    arrow.setAttribute('stroke', '#003b5a');
+                    arrow.setAttribute('stroke-width', '1');
+                    graphLab.svg.appendChild(arrow);
+                });
+            }
+            function refreshEdgeList() {
+                if (!graphLab.connectionsEl) return;
+                graphLab.connectionsEl.innerHTML = '';
+                graphLab.edges.forEach(edge => {
+                    const from = graphLab.nodes.find(n => n.id === edge.from);
+                    const to = graphLab.nodes.find(n => n.id === edge.to);
+                    if (!from || !to) return;
+                    const li = document.createElement('li');
+                    li.textContent = `${from.label} → ${to.label}`;
+                    graphLab.connectionsEl.appendChild(li);
+                });
+            }
+            function generateGraphPython() {
+            const code = buildPythonCode();
+            if (graphLab.codeOutput) {
+                graphLab.codeOutput.dataset.rawCode = code;
+                graphLab.codeOutput.innerHTML = highlightPythonText(code);
+                graphLab.codeOutput.parentElement.scrollTop = 0;
+            }
+                // Clipboard copy disabled for now to avoid permission prompts.
+            }
+            function buildPythonCode() {
+                if (!graphLab.nodes.length) {
+                    return '# Add nodes to the graph to generate runnable code.';
+                }
+                const lines = [];
+                const incomingCounts = {};
+                graphLab.edges.forEach(edge => {
+                    incomingCounts[edge.to] = (incomingCounts[edge.to] || 0) + 1;
+                });
+                lines.push('from pyDF import *', '');
+                const functionBlocks = [];
+                const usedFuncNames = new Set();
+                const usedVarNames = new Set();
+                const nodeMeta = {};
+                graphLab.nodes.forEach(node => {
+                    const { funcName, block } = buildFunctionBlock(node, usedFuncNames);
+                    const varName = ensureUniqueName(sanitizeIdentifier(node.label || node.id, 'node'), usedVarNames);
+                    nodeMeta[node.id] = { funcName, varName, type: node.type };
+                    functionBlocks.push(block);
+                });
+                lines.push('# Node functions');
+                lines.push(functionBlocks.join('\n\n'));
+                lines.push('');
+                lines.push('WORKERS = 4  # Adjust to match your available cores');
+                lines.push('graph = DFGraph()');
+                lines.push('sched = Scheduler(graph, WORKERS, mpi_enabled=False)');
+                lines.push('');
+                lines.push('# Nodes');
+                graphLab.nodes.forEach(node => {
+                    const meta = nodeMeta[node.id];
+                    const inputCount = node.type === 'Source' ? 0 : Math.max(1, incomingCounts[node.id] || 0);
+                    lines.push(`${meta.varName} = Node(${meta.funcName}, ${inputCount})`);
+                    lines.push(`graph.add(${meta.varName})`);
+                });
+                if (graphLab.edges.length) {
+                    lines.push('');
+                    lines.push('# Connections');
+                    const portUsage = {};
+                    graphLab.edges.forEach(edge => {
+                        const port = portUsage[edge.to] || 0;
+                        portUsage[edge.to] = port + 1;
+                        const fromMeta = nodeMeta[edge.from];
+                        const toMeta = nodeMeta[edge.to];
+                        lines.push(`${fromMeta.varName}.add_edge(${toMeta.varName}, ${port})`);
+                    });
+                }
+                lines.push('');
+                lines.push('sched.start()');
+                return lines.join('\n');
+            }
+            function buildFunctionBlock(node, usedNames) {
+                const base = sanitizeIdentifier(node.label || node.id, 'fn');
+                const argsSignature = node.type === 'Source' ? '' : 'args';
+                const fallbackName = ensureUniqueName(`${base}_fn`, usedNames);
+                const snippet = (node.code || '').trim();
+                if (snippet) {
+                    const match = snippet.match(/def\s+([A-Za-z_][A-Za-z0-9_]*)/);
+                    if (match) {
+                        usedNames.add(match[1]);
+                        return { funcName: match[1], block: snippet };
+                    }
+                    const body = indentBlock(snippet);
+                    return { funcName: fallbackName, block: `def ${fallbackName}(${argsSignature}):\n${body}` };
+                }
+                const defaultBody = indentBlock(getDefaultBody(node.type));
+                return { funcName: fallbackName, block: `def ${fallbackName}(${argsSignature}):\n${defaultBody}` };
+            }
+            function ensureUniqueName(base, usedSet) {
+                let candidate = base || 'node';
+                if (/^\d/.test(candidate)) {
+                    candidate = `_${candidate}`;
+                }
+                let index = 2;
+                let result = candidate;
+                while (usedSet.has(result)) {
+                    result = `${candidate}_${index++}`;
+                }
+                usedSet.add(result);
+                return result;
+            }
+            function sanitizeIdentifier(label, prefix) {
+                let safe = (label || '').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+                safe = safe.replace(/_{2,}/g, '_').replace(/^_+/, '');
+                if (!safe) {
+                    safe = prefix;
+                }
+                if (/^\d/.test(safe)) {
+                    safe = `${prefix}_${safe}`;
+                }
+                return safe;
+            }
+            function indentBlock(source) {
+                const normalized = source.replace(/\r/g, '').split('\n');
+                const hasContent = normalized.some(line => line.trim().length);
+                if (!hasContent) {
+                    return '    pass';
+                }
+                return normalized.map(line => line ? `    ${line}` : '    ').join('\n');
+            }
+            function getDefaultBody(type) {
+                if (type === 'Source') {
+                    return '# TODO: emit a value for the graph\nreturn None';
+                }
+                if (type === 'Sink') {
+                    return 'value = args[0]\nprint(value)\nreturn value';
+                }
+                return 'value = args[0]\nreturn value';
+            }
+            function openNodeEditor(node) {
+                const existing = document.querySelector(`.window[data-window-type="editor-${node.id}"]`);
+                if (existing) {
+                    restoreWindow(existing.id);
+                    activateWindow(existing);
+                    return;
+                }
+                const wrapper = document.createElement('div');
+                const intro = document.createElement('p');
+                intro.textContent = `${node.label} (${node.type}) emits/consumes the payloads you describe below.`;
+                const nodeId = node.id;
+                const nameLabel = document.createElement('label');
+                nameLabel.textContent = 'Node label';
+                nameLabel.style.display = 'block';
+                nameLabel.style.fontWeight = 'bold';
+                nameLabel.style.marginTop = '10px';
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.value = node.label;
+                nameInput.className = 'node-name-input';
+                nameInput.style.width = '100%';
+                nameInput.style.margin = '6px 0 12px';
+                const textarea = document.createElement('textarea');
+                textarea.className = 'note-textarea';
+                textarea.style.height = '220px';
+                textarea.value = node.code || defaultSnippets[node.type] || '';
+                const actions = document.createElement('div');
+                actions.className = 'note-actions';
+                const renameBtn = document.createElement('button');
+                renameBtn.textContent = 'Rename node';
+                renameBtn.addEventListener('click', () => {
+                    const updated = renameGraphNode(nodeId, nameInput.value);
+                    if (updated) {
+                        nameInput.value = updated;
+                        intro.textContent = `${updated} (${node.type}) emits/consumes the payloads you describe below.`;
+                    }
+                });
+                const saveBtn = document.createElement('button');
+                saveBtn.textContent = 'Save function';
+                saveBtn.addEventListener('click', () => {
+                    const liveNode = graphLab.nodes.find(n => n.id === nodeId);
+                    if (!liveNode) return;
+                    liveNode.code = textarea.value;
+                    liveNode.hasCustomCode = textarea.value.trim().length > 0;
+                    if (liveNode.el) {
+                        liveNode.el.classList.toggle('has-code', liveNode.hasCustomCode);
+                    }
+                    pushHistory();
+                    saveBtn.textContent = 'Saved';
+                    setTimeout(() => saveBtn.textContent = 'Save function', 1200);
+                });
+                const pasteBtn = document.createElement('button');
+                pasteBtn.textContent = 'Paste from clipboard';
+                pasteBtn.addEventListener('click', async () => {
+                    try {
+                        const clip = await navigator.clipboard.readText();
+                        textarea.value = clip;
+                    } catch (err) {
+                        pasteBtn.textContent = 'Clipboard blocked';
+                        setTimeout(() => pasteBtn.textContent = 'Paste from clipboard', 1500);
+                    }
+                });
+                actions.append(saveBtn, pasteBtn);
+                actions.prepend(renameBtn);
+                wrapper.append(intro, nameLabel, nameInput, textarea, actions);
+                createWindow({
+                    title: `${node.label} — editor`,
+                    content: wrapper,
+                    width: 420,
+                    height: 360,
+                    x: 460,
+                    y: 160,
+                    windowType: `editor-${node.id}`
+                });
+            }
+            function isGraphWindowFocused() {
+                const graphWin = document.querySelector('.window[data-window-type="graph"]');
+                if (!graphWin || graphWin.classList.contains('minimized')) return false;
+                return graphWin.classList.contains('active');
+            }
+            document.addEventListener('keydown', (event) => {
+                if (!graphLab.active || !graphLab.nodesLayer) return;
+                if (!isGraphWindowFocused()) return;
+                const target = event.target;
+                const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+                if (tag === 'input' || tag === 'textarea' || (target && target.isContentEditable)) {
+                    return;
+                }
+                const key = event.key ? event.key.toLowerCase() : '';
+                if (event.ctrlKey && !event.shiftKey && key === 'z') {
+                    event.preventDefault();
+                    undoGraph();
+                } else if (event.ctrlKey && (key === 'y' || (event.shiftKey && key === 'z'))) {
+                    event.preventDefault();
+                    redoGraph();
+                }
+            });
+            function initialize() {
+                openTutorial();
+                openGraphLab();
+            }
+            window.openTutorial = openTutorial;
+            window.openGraphLab = openGraphLab;
+            window.openReferences = openReferences;
+            window.createNote = createNote;
+            window.minimizeAll = minimizeAll;
+            window.restoreAll = restoreAll;
+            window.closeWindow = closeWindow;
+            window.minimizeWindow = minimizeWindow;
+            window.bringToFront = (id) => {
+                const win = typeof id === 'string' ? document.getElementById(id) : id;
+                if (win) activateWindow(win);
+            };
+            window.addEventListener('DOMContentLoaded', initialize);
+        })();
+    </script>
+</body>
+</html>
