@@ -1,4 +1,6 @@
 # Sucuri
+> **New:** A PaperWM-inspired tutorial + graph lab is available in `docs/sucuri_paperwm_tutorial.html`. This in-progress UI is meant to help explore how Sucuri works and is still actively being developed.
+
 Python Dataflow Programming Library
 
 Read the examples and the referenced papers as I do not have a written tutorial (yet).
