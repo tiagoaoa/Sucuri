@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sucuri Tutorial & Graph Builder</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #05060a;
+        --bg-panel: #10182a;
+        --bg-panel-alt: #151e33;
+        --text: #f4f6fb;
+        --muted: #8ea1c7;
+        --accent: #60a5fa;
+        --accent-strong: #93c5fd;
+        --border: rgba(255, 255, 255, 0.08);
+        --code-bg: rgba(4, 11, 25, 0.9);
+        --shadow: 0 20px 50px rgba(5, 5, 15, 0.4);
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: radial-gradient(circle at top, #0c1a2b 0%, #05060a 55%, #05060a 100%);
+        color: var(--text);
+        font-family: var(--sans);
+      }
+
+      body {
+        line-height: 1.6;
+      }
+
+      a {
+        color: var(--accent-strong);
+      }
+
+      button,
+      input,
+      textarea {
+        font-family: inherit;
+      }
+
+      .skip-link {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--accent);
+        color: #010001;
+        border-radius: 0.35rem;
+        z-index: 10;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        padding: 4rem clamp(1.5rem, 5vw, 4rem) 3rem;
+        position: relative;
+      }
+
+      .hero__content h1 {
+        font-size: clamp(2.5rem, 4vw, 3.2rem);
+        margin-bottom: 0.75rem;
+      }
+
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .hero__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      button,
+      .hero__actions a {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      button:hover,
+      .hero__actions a:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      button.primary,
+      .hero__actions a.primary {
+        background: var(--accent);
+        color: #05060a;
+        border-color: transparent;
+      }
+
+      button.ghost {
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .hero__highlights {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hero__highlight {
+        background: var(--bg-panel);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .local-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0 1.5rem 2rem;
+        justify-content: center;
+      }
+
+      .local-nav button {
+        border-radius: 0.65rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .panel {
+        padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
+        background: var(--bg-panel);
+        margin: 0 auto 2rem;
+        border-radius: 2rem;
+        border: 1px solid var(--border);
+        max-width: 1200px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel__header {
+        margin-bottom: 2rem;
+      }
+
+      .panel__header h2 {
+        margin: 0 0 0.5rem;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .card {
+        padding: 1.25rem;
+        border-radius: 1.25rem;
+        border: 1px solid var(--border);
+        background: var(--bg-panel-alt);
+      }
+
+      .card strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .component-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .component {
+        border: 1px dashed rgba(96, 165, 250, 0.4);
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        background: rgba(10, 20, 38, 0.85);
+      }
+
+      .component h3 {
+        margin-top: 0;
+      }
+
+      .component code {
+        font-family: var(--mono);
+        background: var(--code-bg);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.35rem;
+      }
+
+      .example-viewer {
+        display: grid;
+        grid-template-columns: minmax(160px, 220px) 1fr;
+        gap: 1rem;
+      }
+
+      @media (max-width: 800px) {
+        .example-viewer {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .example-viewer__tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .example-viewer__tabs button {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.6rem 0.8rem;
+        border-radius: 0.75rem;
+      }
+
+      .example-viewer__tabs button[aria-selected="true"] {
+        background: var(--accent);
+        color: #05060a;
+        border-color: transparent;
+      }
+
+      .example-viewer__body pre {
+        background: var(--code-bg);
+        padding: 1rem;
+        border-radius: 1rem;
+        overflow-x: auto;
+      }
+
+      .flow-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        counter-reset: steps;
+      }
+
+      .flow-list li {
+        position: relative;
+        padding-left: 3rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .flow-list li::before {
+        counter-increment: steps;
+        content: counter(steps);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(96, 165, 250, 0.1);
+        color: var(--accent-strong);
+        font-weight: 600;
+      }
+
+      .graph-tool {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) 1fr;
+        gap: 1.5rem;
+      }
+
+      @media (max-width: 900px) {
+        .graph-tool {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .graph-tool__sidebar {
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        padding: 1rem;
+        background: var(--bg-panel-alt);
+      }
+
+      .control-group {
+        display: flex;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+      }
+
+      .control-group button {
+        flex: 1;
+        border-radius: 0.65rem;
+      }
+
+      .control-group button.is-active {
+        background: var(--accent);
+        color: #05060a;
+        border-color: transparent;
+      }
+
+      .graph-tool__canvas {
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        background: rgba(3, 8, 20, 0.8);
+        min-height: 400px;
+      }
+
+      #graph-surface {
+        width: 100%;
+        height: clamp(320px, 60vh, 560px);
+      }
+
+      .node {
+        fill: rgba(7, 20, 42, 0.95);
+        stroke: rgba(147, 197, 253, 0.8);
+        stroke-width: 2px;
+      }
+
+      .node text {
+        fill: var(--text);
+        pointer-events: none;
+        font-size: 0.9rem;
+      }
+
+      .edge {
+        stroke: rgba(96, 165, 250, 0.65);
+        stroke-width: 2px;
+        marker-end: url(#arrow-head);
+      }
+
+      .helper {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      textarea#graph-json {
+        width: 100%;
+        background: var(--code-bg);
+        color: var(--accent-strong);
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        padding: 0.75rem;
+        font-family: var(--mono);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .modal[aria-hidden="false"] {
+        display: flex;
+      }
+
+      .modal__dialog {
+        background: #0b1426;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        width: min(520px, 90vw);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .modal__dialog header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .modal__dialog label {
+        display: block;
+        font-weight: 600;
+        margin: 0.75rem 0 0.35rem;
+      }
+
+      .modal__dialog input,
+      .modal__dialog textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.65rem;
+        border: 1px solid var(--border);
+        background: rgba(3, 9, 25, 0.9);
+        color: var(--text);
+      }
+
+      .modal__actions {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+      }
+
+      button.icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .export-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .site-footer {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+      }
+
+      code {
+        font-family: var(--mono);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="hero" id="top">
+      <div class="hero__content">
+        <p class="eyebrow">Sucuri Tutorial</p>
+        <h1>A minimalistic dataflow journey</h1>
+        <p>
+          Inspired by “A Minimalistic Dataflow Programming Library for Python” and grounded in the
+          concrete examples/tests inside this repository, this tutorial distills how Sucuri composes
+          graphs, schedules work, and allows you to experiment with node-level behaviors.
+        </p>
+        <div class="hero__actions">
+          <button class="ghost" data-scroll="#graph-tool">Open the graph builder</button>
+          <a class="primary" href="https://doi.org/10.1109/SBAC-PADW.2014.20" target="_blank" rel="noopener noreferrer">
+            Read the SBAC-PADW'14 paper
+          </a>
+        </div>
+      </div>
+      <div class="hero__highlights">
+        <div class="hero__highlight" data-highlight>
+          <strong>DFGraph</strong>
+          <span>Explicit nodes + edges; see <code>pyDF/pydf.py</code>.</span>
+        </div>
+        <div class="hero__highlight" data-highlight>
+          <strong>Schedulers</strong>
+          <span>Multiprocess + MPI aware worker pool.</span>
+        </div>
+        <div class="hero__highlight" data-highlight>
+          <strong>Operands</strong>
+          <span>Tagged payloads orchestrate determinism.</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="local-nav" aria-label="Tutorial sections">
+      <button data-scroll="#primer">Primer</button>
+      <button data-scroll="#components">Components</button>
+      <button data-scroll="#examples">Case studies</button>
+      <button data-scroll="#flow">Runtime flow</button>
+      <button data-scroll="#graph-tool">Graph builder</button>
+    </nav>
+
+    <main id="main">
+      <section id="primer" class="panel">
+        <div class="panel__header">
+          <h2>Paper-informed primer</h2>
+          <p>
+            The SBAC-PADW paper frames Sucuri as a pragmatic dataflow runtime. These cards summarize
+            the main takeaways as they appear in the codebase.
+          </p>
+        </div>
+        <div class="card-grid" id="primer-grid" aria-live="polite"></div>
+      </section>
+
+      <section id="components" class="panel">
+        <div class="panel__header">
+          <h2>Runtime components in practice</h2>
+          <p>
+            Each component below references files from this repository so you can open the source and
+            compare with the explanations from the paper.
+          </p>
+        </div>
+        <div class="component-layout">
+          <article class="component" id="component-graph"></article>
+          <article class="component" id="component-nodes"></article>
+          <article class="component" id="component-scheduler"></article>
+          <article class="component" id="component-tags"></article>
+        </div>
+      </section>
+
+      <section id="examples" class="panel">
+        <div class="panel__header">
+          <h2>Case studies from the repo</h2>
+          <p>
+            Explore real scripts located under <code>examples/</code>. Each tab mirrors how the paper's
+            abstractions show up in runnable code.
+          </p>
+        </div>
+        <div class="example-viewer">
+          <div class="example-viewer__tabs" role="tablist" id="example-tabs"></div>
+          <article class="example-viewer__body" aria-live="polite">
+            <header>
+              <h3 id="example-title"></h3>
+              <p id="example-path"></p>
+            </header>
+            <p id="example-summary"></p>
+            <pre><code id="example-code"></code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="flow" class="panel">
+        <div class="panel__header">
+          <h2>Runtime flow checklist</h2>
+          <p>
+            The sequence below traces how Sucuri executes a graph when you call <code>Scheduler.start()</code>.
+            It is pieced together from <code>pyDF/pydf.py</code>, <code>pyDF/nodes.py</code>, and the sample graphs.
+          </p>
+        </div>
+        <ol class="flow-list" id="flow-list"></ol>
+      </section>
+
+      <section id="graph-tool" class="panel">
+        <div class="panel__header">
+          <h2>Sucuri graph builder</h2>
+          <p>
+            Draft a graph that mirrors your pipeline and annotate each node with Python code. The tool
+            keeps the representation human-readable so you can copy-paste it back into a script.
+          </p>
+        </div>
+        <div class="graph-tool">
+          <div class="graph-tool__sidebar">
+            <h3>Controls</h3>
+            <p>Double-click on the canvas to create nodes.</p>
+            <div class="control-group">
+              <button data-mode="edit" class="is-active">Edit nodes</button>
+              <button data-mode="connect">Connect nodes</button>
+            </div>
+            <button data-action="clear" class="ghost">Clear graph</button>
+            <button data-action="snapshot">Copy JSON</button>
+            <p class="helper">
+              Click a node in <em>Edit</em> mode to open its code editor. Switch to <em>Connect</em> to draw
+              directed edges.
+            </p>
+            <label class="export-label" for="graph-json">Graph snapshot</label>
+            <textarea id="graph-json" readonly rows="8"></textarea>
+          </div>
+          <div class="graph-tool__canvas">
+            <svg id="graph-surface" viewBox="0 0 960 540" role="application" aria-label="Graph designer"></svg>
+          </div>
+        </div>
+
+        <div class="modal" id="node-modal" role="dialog" aria-modal="true" aria-hidden="true">
+          <div class="modal__dialog">
+            <header>
+              <h3>Edit node</h3>
+              <button class="icon" data-close>&times;</button>
+            </header>
+            <label>
+              Display label
+              <input type="text" id="node-label" />
+            </label>
+            <label>
+              Node code
+              <textarea id="node-code" rows="10"></textarea>
+            </label>
+            <div class="modal__actions">
+              <button class="ghost" data-close>Cancel</button>
+              <button class="primary" id="save-node">Save</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Crafted for the Sucuri repository. See <code>pyDF/pydf.py</code>, <code>pyDF/nodes.py</code>, and the scripts
+        in <code>examples/</code> for the source material.
+      </p>
+      <p><a href="#top">Back to top</a></p>
+    </footer>
+
+    <script>
+      const primerData = [
+        {
+          title: "Composable operators",
+          detail:
+            "The paper stresses that a dataflow graph is fully described by nodes and edges. In pyDF/pydf.py " +
+            "we literally see that `DFGraph.add` only assigns integer ids and stores Node objects—no magic " +
+            "scheduler hints required.",
+        },
+        {
+          title: "Deterministic tokens",
+          detail:
+            "Tagged operands (see `TaggedValue` in pyDF/nodes.py) echo the paper's focus on determinism: " +
+            "tags become implicit timestamps that the Serializer relies on to re-establish ordering.",
+        },
+        {
+          title: "Scheduling scope",
+          detail:
+            "Workers talk to the Scheduler through multiprocessing pipes exactly as described in the " +
+            "SBAC-PADW runtime sketch. The optional MPI layer mirrors the multi-node deployment path.",
+        },
+        {
+          title: "Minimal API surface",
+          detail:
+            "Every example in this repo uses the same trio—`DFGraph`, `Node`/`Source`/`Feeder`, and " +
+            "`Scheduler`. This keeps the learning curve aligned with the minimalist goal of the paper.",
+        },
+      ];
+
+      const componentData = {
+        graph: {
+          title: "DFGraph",
+          body:
+            "`DFGraph` (pyDF/pydf.py) stores nodes in insertion order and assigns numeric ids. " +
+            "Edges are attached by calling `node.add_edge(dst, dstport)`, which simply caches tuples. " +
+            "The simplicity mirrors the paper's insistence that topology is just metadata.",
+          bullets: [
+            "Nodes are plain Python callables wrapped by `Node` or its subclasses.",
+            "Affinity isn't part of the graph; it lives on each node via `Node.pin`.",
+            "Graphs stay mutable until you pass them to `Scheduler`.",
+          ],
+        },
+        nodes: {
+          title: "Nodes & Sources",
+          body:
+            "`Node`, `Source`, `Feeder`, `FilterTagged`, and `Serializer` (pyDF/nodes.py) bring the " +
+            "paper's operator taxonomy to life. Each overrides `run()` and optionally `match()` to " +
+            "control how operands are consumed.",
+          bullets: [
+            "`Source` iterates over any iterable and emits `TaggedValue` objects while piggybacking task requests.",
+            "`FilterTagged` buffers operands by tag to synchronize multi-input joins.",
+            "`Serializer` enforces in-order delivery for tagged streams and usually pins to worker 0.",
+          ],
+        },
+        scheduler: {
+          title: "Scheduler",
+          body:
+            "Located in pyDF/pydf.py, the scheduler coordinates worker processes, handles task queues, and can " +
+            "fan out through MPI. Pending-task counters and optional affinities implement the locality hints " +
+            "mentioned in the paper.",
+          bullets: [
+            "Workers are subclasses of `multiprocessing.Process` that pull tasks over pipes.",
+            "Each worker emits `Oper` messages containing produced values and implicit task requests.",
+            "MPI support duplicates the worker pool per rank for distributed execution.",
+          ],
+        },
+        tags: {
+          title: "Tagged operands",
+          body:
+            "`TaggedValue` keeps a numeric tag alongside every payload. Examples such as `examples/matchtag.py` " +
+            "and the Serializer implementation demonstrate how tags safeguard determinism and ordering.",
+          bullets: [
+            "Comparators are implemented so tags can be sorted and matched via `bisect` and dictionaries.",
+            "Nodes may forward `None` or send an empty task request when filtering out data.",
+            "Tagged operands make it trivial to describe iterative algorithms or zipping sources.",
+          ],
+        },
+      };
+
+      const exampleData = [
+        {
+          id: "addition",
+          title: "Feeders and a binary operator",
+          path: "examples/addition.py",
+          summary:
+            "Two `Feeder` nodes emit constants, and a single `Node(soma, 2)` sums the pair. It's the " +
+            "smallest possible DAG mirroring the paper's figure where tokens move between nodes.",
+          code: `from pyDF import *\n\n\ndef soma(args):\n    a, b = args\n    print(f"Adding {a} + {b}")\n    return a + b\n\n\ngraph = DFGraph()\nsched = Scheduler(graph, mpi_enabled=False)\n\nA = Feeder(1)\nB = Feeder(2)\nC = Node(soma, 2)\n\ngraph.add(A)\ngraph.add(B)\ngraph.add(C)\n\nA.add_edge(C, 0)\nB.add_edge(C, 1)\n\nsched.start()\n`,
+        },
+        {
+          id: "pipeline",
+          title: "Streaming text pipeline",
+          path: "examples/pipeline.py",
+          summary:
+            "A `Source` feeds lines from `text.txt` into a pinned `Serializer` node that prints them. This " +
+            "shows how I/O-bound sources coexist with strictly ordered sinks.",
+          code: `import sys, os\nsys.path.append(os.environ['PYDFHOME'])\nfrom pyDF import *\n\n\ndef print_line(args):\n    line = args[0]\n    print(f"-- {line.rstrip()} --")\n\nnprocs = int(sys.argv[1])\n\ngraph = DFGraph()\nsched = Scheduler(graph, nprocs, mpi_enabled=False)\nfp = open("text.txt", "r")\n\nsrc = Source(fp)\nprinter = Serializer(print_line, 1)\nprinter.pin(0)\n\ngraph.add(src)\ngraph.add(printer)\n\nsrc.add_edge(printer, 0)\n\nsched.start()\n`,
+        },
+        {
+          id: "matchtag",
+          title: "Tagged joins",
+          path: "examples/matchtag.py",
+          summary:
+            "Five `Source(range(n))` producers emit tagged integers that converge into `FilterTagged`. The node " +
+            "waits for matching tags across all ports before calling `imprime`. It's the tagged-join story from the paper.",
+          code: `import sys, os\nsys.path.append(os.environ['PYDFHOME'])\nfrom pyDF import *\n\ndef imprime(args):\n    print(args)\n    return None\n\nnworkers = int(sys.argv[1])\nn = int(sys.argv[2])\n\ngraph = DFGraph()\nsched = Scheduler(graph, nworkers, mpi_enabled=False)\n\nsources = [Source(range(n)) for _ in range(5)]\njoiner = FilterTagged(imprime, 5)\n\nfor src in sources:\n    graph.add(src)\ngraph.add(joiner)\n\nfor port, src in enumerate(sources):\n    src.add_edge(joiner, port)\n\nsched.start()\n`,
+        },
+      ];
+
+      const flowData = [
+        {
+          title: "Compose the graph",
+          detail:
+            "Instantiate `DFGraph`, add `Node`/`Source`/`Feeder` instances, and wire edges. Optional pinning happens before the scheduler touches the graph.",
+        },
+        {
+          title: "Start the scheduler",
+          detail:
+            "`Scheduler.start()` (pyDF/pydf.py) launches worker processes and, when MPI is enabled, spawns communication threads to relay tasks across ranks.",
+        },
+        {
+          title: "Workers request tasks",
+          detail:
+            "Each `Worker` pushes a dummy `Oper` into the shared queue to request work. The scheduler responds by sending a `Task` describing which node to run and what operands to consume.",
+        },
+        {
+          title: "Nodes execute",
+          detail:
+            "Nodes pull values from their input ports via `match()`. Once `run()` returns a value, `Node.create_oper` fans out `Oper` messages to destination ports.",
+        },
+        {
+          title: "Operands propagate",
+          detail:
+            "Targets receive operands, append them to their `inport` buffers, and call `match()` again. Tagged nodes such as `FilterTagged` or `Serializer` group by tag before emitting.",
+        },
+        {
+          title: "Shutdown",
+          detail:
+            "When a terminal node has no destinations it still emits an `Oper` with `dstid=None` to signal the scheduler. Once every worker drains its queue, the scheduler sends termination messages.",
+        },
+      ];
+
+      const ns = "http://www.w3.org/2000/svg";
+
+      class GraphEditor {
+        constructor() {
+          this.svg = document.getElementById("graph-surface");
+          this.jsonField = document.getElementById("graph-json");
+          this.sidebar = document.querySelector(".graph-tool__sidebar");
+          this.modeButtons = this.sidebar.querySelectorAll("[data-mode]");
+          this.clearBtn = this.sidebar.querySelector("[data-action=clear]");
+          this.snapshotBtn = this.sidebar.querySelector("[data-action=snapshot]");
+          this.modal = document.getElementById("node-modal");
+          this.labelInput = document.getElementById("node-label");
+          this.codeInput = document.getElementById("node-code");
+          this.saveBtn = document.getElementById("save-node");
+          this.closeButtons = this.modal.querySelectorAll("[data-close]");
+          this.mode = "edit";
+          this.nodes = [];
+          this.edges = [];
+          this.counter = 1;
+          this.pendingConnection = null;
+          this.dragState = null;
+          this.viewBox = { width: 960, height: 540 };
+          this.NODE_WIDTH = 140;
+          this.NODE_HEIGHT = 60;
+          this.defaultCode = "def stage(args):\n    # TODO: implement node logic\n    return args[0]\n";
+          this.editingNode = null;
+          this.dragJustHappened = false;
+
+          this.bindEvents();
+          this.updateJSON();
+          this.render();
+        }
+
+        bindEvents() {
+          this.modeButtons.forEach((btn) => {
+            btn.addEventListener("click", () => this.setMode(btn.dataset.mode));
+          });
+
+          this.clearBtn.addEventListener("click", () => {
+            this.nodes = [];
+            this.edges = [];
+            this.pendingConnection = null;
+            this.counter = 1;
+            this.render();
+            this.updateJSON();
+          });
+
+          this.snapshotBtn.addEventListener("click", () => this.copyJSON());
+
+          this.svg.addEventListener("dblclick", (evt) => {
+            if (evt.target.closest("[data-node-id]")) return;
+            const point = this.getPoint(evt);
+            this.addNode(point.x, point.y);
+          });
+
+          this.svg.addEventListener("pointerdown", (evt) => this.startDrag(evt));
+          window.addEventListener("pointermove", (evt) => this.onDrag(evt));
+          window.addEventListener("pointerup", () => this.endDrag());
+
+          this.svg.addEventListener("click", (evt) => this.handleClick(evt));
+
+          this.saveBtn.addEventListener("click", () => this.persistNode());
+          this.closeButtons.forEach((btn) => btn.addEventListener("click", () => this.closeModal()));
+          document.addEventListener("keydown", (evt) => {
+            if (evt.key === "Escape") this.closeModal();
+          });
+        }
+
+        setMode(mode) {
+          this.mode = mode;
+          this.pendingConnection = null;
+          this.modeButtons.forEach((btn) => btn.classList.toggle("is-active", btn.dataset.mode === mode));
+          this.render();
+        }
+
+        getPoint(evt) {
+          const rect = this.svg.getBoundingClientRect();
+          const x = ((evt.clientX - rect.left) / rect.width) * this.viewBox.width;
+          const y = ((evt.clientY - rect.top) / rect.height) * this.viewBox.height;
+          return { x, y };
+        }
+
+        addNode(x, y) {
+          const node = {
+            id: `node-${this.counter}`,
+            label: `Node ${this.counter}`,
+            x: x - this.NODE_WIDTH / 2,
+            y: y - this.NODE_HEIGHT / 2,
+            code: this.defaultCode,
+          };
+          this.counter += 1;
+          this.nodes.push(node);
+          this.render();
+          this.updateJSON();
+        }
+
+        startDrag(evt) {
+          const target = evt.target.closest("[data-node-id]");
+          if (!target) return;
+          const node = this.nodes.find((n) => n.id === target.dataset.nodeId);
+          if (!node) return;
+          this.dragState = {
+            id: node.id,
+            offsetX: this.getPoint(evt).x - node.x,
+            offsetY: this.getPoint(evt).y - node.y,
+            moved: false,
+          };
+          this.dragJustHappened = false;
+          evt.preventDefault();
+        }
+
+        onDrag(evt) {
+          if (!this.dragState) return;
+          const point = this.getPoint(evt);
+          const node = this.nodes.find((n) => n.id === this.dragState.id);
+          if (!node) return;
+          node.x = point.x - this.dragState.offsetX;
+          node.y = point.y - this.dragState.offsetY;
+          this.dragState.moved = true;
+          this.render();
+          this.updateJSON();
+        }
+
+        endDrag() {
+          if (!this.dragState) return;
+          const moved = this.dragState.moved;
+          this.dragState = null;
+          this.dragJustHappened = moved;
+          if (moved) {
+            setTimeout(() => {
+              this.dragJustHappened = false;
+            }, 0);
+          }
+        }
+
+        handleClick(evt) {
+          const target = evt.target.closest("[data-node-id]");
+          if (!target) return;
+          if (this.dragJustHappened) {
+            this.dragJustHappened = false;
+            return;
+          }
+          const node = this.nodes.find((n) => n.id === target.dataset.nodeId);
+          if (!node) return;
+
+          if (this.mode === "connect") {
+            this.handleConnection(node);
+          } else {
+            this.openModal(node);
+          }
+        }
+
+        handleConnection(node) {
+          if (!this.pendingConnection) {
+            this.pendingConnection = node.id;
+            this.render();
+            return;
+          }
+          if (this.pendingConnection === node.id) {
+            this.pendingConnection = null;
+            this.render();
+            return;
+          }
+          this.edges.push({ from: this.pendingConnection, to: node.id });
+          this.pendingConnection = null;
+          this.render();
+          this.updateJSON();
+        }
+
+        render() {
+          while (this.svg.firstChild) {
+            this.svg.removeChild(this.svg.firstChild);
+          }
+          const defs = document.createElementNS(ns, "defs");
+          const marker = document.createElementNS(ns, "marker");
+          marker.setAttribute("id", "arrow-head");
+          marker.setAttribute("markerWidth", "10");
+          marker.setAttribute("markerHeight", "10");
+          marker.setAttribute("refX", "10");
+          marker.setAttribute("refY", "3");
+          marker.setAttribute("orient", "auto");
+          marker.setAttribute("markerUnits", "strokeWidth");
+          const markerPath = document.createElementNS(ns, "path");
+          markerPath.setAttribute("d", "M0,0 L10,3 L0,6 z");
+          markerPath.setAttribute("fill", "rgba(147,197,253,0.9)");
+          marker.appendChild(markerPath);
+          defs.appendChild(marker);
+          this.svg.appendChild(defs);
+
+          this.edges.forEach((edge) => {
+            const source = this.nodes.find((n) => n.id === edge.from);
+            const target = this.nodes.find((n) => n.id === edge.to);
+            if (!source || !target) return;
+            const line = document.createElementNS(ns, "line");
+            line.setAttribute("x1", source.x + this.NODE_WIDTH / 2);
+            line.setAttribute("y1", source.y + this.NODE_HEIGHT / 2);
+            line.setAttribute("x2", target.x + this.NODE_WIDTH / 2);
+            line.setAttribute("y2", target.y + this.NODE_HEIGHT / 2);
+            line.setAttribute("class", "edge");
+            this.svg.appendChild(line);
+          });
+
+          this.nodes.forEach((node) => {
+            const group = document.createElementNS(ns, "g");
+            group.dataset.nodeId = node.id;
+            const rect = document.createElementNS(ns, "rect");
+            rect.setAttribute("x", node.x);
+            rect.setAttribute("y", node.y);
+            rect.setAttribute("width", this.NODE_WIDTH);
+            rect.setAttribute("height", this.NODE_HEIGHT);
+            rect.setAttribute("rx", "14");
+            rect.setAttribute("ry", "14");
+            rect.setAttribute("class", "node");
+            if (this.mode === "connect" && this.pendingConnection === node.id) {
+              rect.setAttribute("stroke", "#fbbf24");
+            }
+            const text = document.createElementNS(ns, "text");
+            text.setAttribute("x", node.x + this.NODE_WIDTH / 2);
+            text.setAttribute("y", node.y + this.NODE_HEIGHT / 2 + 4);
+            text.setAttribute("text-anchor", "middle");
+            text.textContent = node.label;
+            group.appendChild(rect);
+            group.appendChild(text);
+            this.svg.appendChild(group);
+          });
+        }
+
+        openModal(node) {
+          this.editingNode = node;
+          this.labelInput.value = node.label;
+          this.codeInput.value = node.code;
+          this.modal.setAttribute("aria-hidden", "false");
+        }
+
+        closeModal() {
+          this.modal.setAttribute("aria-hidden", "true");
+          this.editingNode = null;
+        }
+
+        persistNode() {
+          if (!this.editingNode) return;
+          this.editingNode.label = this.labelInput.value.trim() || this.editingNode.label;
+          this.editingNode.code = this.codeInput.value;
+          this.closeModal();
+          this.render();
+          this.updateJSON();
+        }
+
+        updateJSON() {
+          const payload = {
+            nodes: this.nodes.map((node) => ({
+              id: node.id,
+              label: node.label,
+              position: { x: Number(node.x.toFixed(1)), y: Number(node.y.toFixed(1)) },
+              code: node.code,
+            })),
+            edges: this.edges.slice(),
+          };
+          this.jsonField.value = JSON.stringify(payload, null, 2);
+        }
+
+        async copyJSON() {
+          const text = this.jsonField.value;
+          try {
+            await navigator.clipboard.writeText(text);
+            this.snapshotBtn.textContent = "Copied!";
+          } catch (err) {
+            if (this.jsonField.select) {
+              this.jsonField.select();
+            }
+            try {
+              document.execCommand("copy");
+              this.snapshotBtn.textContent = "Copied";
+            } catch (copyErr) {
+              this.snapshotBtn.textContent = "Select JSON above";
+            }
+          }
+          setTimeout(() => {
+            this.snapshotBtn.textContent = "Copy JSON";
+          }, 1500);
+        }
+      }
+
+      function renderPrimer() {
+        const grid = document.getElementById("primer-grid");
+        primerData.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "card";
+          card.innerHTML = `<strong>${item.title}</strong><p>${item.detail}</p>`;
+          grid.appendChild(card);
+        });
+      }
+
+      function renderComponents() {
+        const ids = ["graph", "nodes", "scheduler", "tags"];
+        ids.forEach((id) => {
+          const slot = document.getElementById(`component-${id}`);
+          const data = componentData[id];
+          if (!slot || !data) return;
+          const bulletHTML = data.bullets.map((text) => `<li>${text}</li>`).join("");
+          slot.innerHTML = `<h3>${data.title}</h3><p>${data.body}</p><ul>${bulletHTML}</ul>`;
+        });
+      }
+
+      function initExamples() {
+        const tabs = document.getElementById("example-tabs");
+        const selectExample = (id) => {
+          const example = exampleData.find((ex) => ex.id === id);
+          if (!example) return;
+          document.getElementById("example-title").textContent = example.title;
+          document.getElementById("example-path").textContent = example.path;
+          document.getElementById("example-summary").textContent = example.summary;
+          document.getElementById("example-code").textContent = example.code;
+          tabs.querySelectorAll("button").forEach((btn) => {
+            const active = btn.dataset.exampleId === id;
+            btn.setAttribute("aria-selected", active);
+            btn.tabIndex = active ? 0 : -1;
+          });
+        };
+
+        exampleData.forEach((example, index) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = example.title;
+          btn.dataset.exampleId = example.id;
+          btn.setAttribute("role", "tab");
+          btn.addEventListener("click", () => selectExample(example.id));
+          if (index === 0) {
+            btn.setAttribute("aria-selected", true);
+          }
+          tabs.appendChild(btn);
+        });
+
+        selectExample(exampleData[0].id);
+      }
+
+      function renderFlow() {
+        const list = document.getElementById("flow-list");
+        flowData.forEach((step) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<h3>${step.title}</h3><p>${step.detail}</p>`;
+          list.appendChild(li);
+        });
+      }
+
+      function setupScrollLinks() {
+        document.querySelectorAll("[data-scroll]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const target = document.querySelector(btn.dataset.scroll);
+            if (!target) return;
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        });
+      }
+
+      function init() {
+        renderPrimer();
+        renderComponents();
+        initExamples();
+        renderFlow();
+        setupScrollLinks();
+        new GraphEditor();
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
