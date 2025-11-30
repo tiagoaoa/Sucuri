@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <defs>
+    <marker id="arrowhead4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4a90d9"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="200" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">matchtag.py - Tagged Join (5 Sources)</text>
+
+  <!-- Sources -->
+  <rect x="20" y="50" width="60" height="35" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="50" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Source s0</text>
+
+  <rect x="90" y="50" width="60" height="35" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="120" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Source s1</text>
+
+  <rect x="160" y="50" width="60" height="35" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="190" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Source s2</text>
+
+  <rect x="230" y="50" width="60" height="35" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="260" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Source s3</text>
+
+  <rect x="300" y="50" width="60" height="35" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="330" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">Source s4</text>
+
+  <!-- FilterTagged -->
+  <rect x="130" y="140" width="120" height="40" rx="5" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="190" y="158" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">FilterTagged</text>
+  <text x="190" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#333">(imprime, 5)</text>
+
+  <!-- Edges -->
+  <line x1="50" y1="85" x2="150" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead4)"/>
+  <line x1="120" y1="85" x2="165" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead4)"/>
+  <line x1="190" y1="85" x2="190" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead4)"/>
+  <line x1="260" y1="85" x2="215" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead4)"/>
+  <line x1="330" y1="85" x2="230" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead4)"/>
+
+  <!-- Port labels -->
+  <text x="85" y="115" font-family="Arial, sans-serif" font-size="8" fill="#666">port 0</text>
+  <text x="130" y="115" font-family="Arial, sans-serif" font-size="8" fill="#666">port 1</text>
+  <text x="195" y="115" font-family="Arial, sans-serif" font-size="8" fill="#666">port 2</text>
+  <text x="235" y="115" font-family="Arial, sans-serif" font-size="8" fill="#666">port 3</text>
+  <text x="280" y="115" font-family="Arial, sans-serif" font-size="8" fill="#666">port 4</text>
+
+  <!-- Annotation -->
+  <rect x="270" y="145" width="110" height="35" rx="3" fill="#f5f5f5" stroke="#ccc" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="325" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">Matches operands</text>
+  <text x="325" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">by tag across ports</text>
+</svg>

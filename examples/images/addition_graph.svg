@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4a90d9"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="150" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">addition.py - Binary Addition Graph</text>
+
+  <!-- Feeder A -->
+  <rect x="40" y="50" width="80" height="40" rx="5" fill="#e8f4e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="80" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#333">Feeder(1)</text>
+  <text x="80" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">A</text>
+
+  <!-- Feeder B -->
+  <rect x="180" y="50" width="80" height="40" rx="5" fill="#e8f4e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="220" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#333">Feeder(2)</text>
+  <text x="220" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">B</text>
+
+  <!-- Node C (soma) -->
+  <rect x="110" y="140" width="80" height="40" rx="5" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="150" y="158" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#333">Node(soma,2)</text>
+  <text x="150" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">C</text>
+
+  <!-- Edge A -> C -->
+  <line x1="80" y1="90" x2="130" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="90" y="115" font-family="Arial, sans-serif" font-size="9" fill="#666">port 0</text>
+
+  <!-- Edge B -> C -->
+  <line x1="220" y1="90" x2="170" y2="140" stroke="#4a90d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="200" y="115" font-family="Arial, sans-serif" font-size="9" fill="#666">port 1</text>
+</svg>
