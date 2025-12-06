@@ -235,7 +235,18 @@ def plot_results(
         ax.set_xlim(0.2, max(worker_counts) + 0.8)
         ax.set_ylim(0, max_speedup * 1.15)
 
-        plt.tight_layout()
+        # Hardware caption
+        fig.text(
+            0.5,
+            0.02,
+            "Hardware: 6 physical cores (hyperthreading disabled for this benchmark)",
+            ha="center",
+            fontsize=10,
+            color="#555",
+            fontstyle="italic",
+        )
+
+        plt.tight_layout(rect=[0, 0.05, 1, 1])
         output_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(output_path, dpi=160, facecolor="white", edgecolor="none")
         plt.close()
