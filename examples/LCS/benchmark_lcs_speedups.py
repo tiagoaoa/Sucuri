@@ -265,7 +265,7 @@ def main(argv: List[str]) -> int:
 
     seq_a, seq_b = generate_sequences(args.length)
     context = lcs_parallel.LCSContext.from_strings(seq_a, seq_b, args.block)
-    worker_counts = list(range(1, 13))
+    worker_counts = list(range(1, 7))
     python_speedups, rust_speedups = measure_speedups(worker_counts, context, repeats=args.repeats)
 
     plot_results(worker_counts, python_speedups, rust_speedups, args.output)
