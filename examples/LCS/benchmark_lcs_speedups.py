@@ -89,18 +89,156 @@ def plot_results(
     rust_speedups: List[float],
     output_path: Path,
 ) -> None:
-    plt.figure(figsize=(8, 5))
-    plt.plot(worker_counts, python_speedups, marker="o", label="Python only")
-    plt.plot(worker_counts, rust_speedups, marker="s", label="Python + Rust")
-    plt.xlabel("Workers")
-    plt.ylabel("Speedup vs 1 worker (best of runs)")
-    plt.title("LCS Block Scheduler Speedups")
-    plt.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
-    plt.legend()
-    plt.tight_layout()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output_path, dpi=160)
-    plt.close()
+    import numpy as np
+    from matplotlib.patches import FancyBboxPatch, Rectangle
+    import matplotlib.patheffects as path_effects
+
+    # Enable xkcd-style hand-drawn look
+    with plt.xkcd(scale=1.2, length=120, randomness=3):
+        fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
+        ax.set_facecolor("white")
+
+        # Colors: coral/orange-red and teal/cyan
+        coral = "#FF6B6B"
+        coral_hatch = "#FF8C42"
+        teal = "#4ECDC4"
+        teal_hatch = "#7FDBDA"
+        gray_line = "#9E9E9E"
+
+        x = np.array(worker_counts)
+        bar_width = 0.35
+
+        # Draw bars with cross-hatching
+        bars_python = ax.bar(
+            x - bar_width / 2,
+            python_speedups,
+            bar_width,
+            label="Python only",
+            color=coral,
+            edgecolor="#333",
+            linewidth=2,
+            hatch="//",
+            zorder=3,
+        )
+        bars_rust = ax.bar(
+            x + bar_width / 2,
+            rust_speedups,
+            bar_width,
+            label="Python + Rust",
+            color=teal,
+            edgecolor="#333",
+            linewidth=2,
+            hatch="\\\\",
+            zorder=3,
+        )
+
+        # Add the line overlay with big gray circles
+        line_y = [(p + r) / 2 for p, r in zip(python_speedups, rust_speedups)]
+        ax.plot(
+            x,
+            line_y,
+            color=gray_line,
+            linewidth=2,
+            linestyle="-",
+            zorder=2,
+            alpha=0.7,
+        )
+        ax.scatter(
+            x,
+            line_y,
+            s=200,
+            color="#E0E0E0",
+            edgecolor=gray_line,
+            linewidth=2,
+            zorder=4,
+        )
+
+        # Faint grid
+        ax.grid(True, linestyle=":", linewidth=0.5, alpha=0.3, color="#CCCCCC", zorder=0)
+        ax.set_axisbelow(True)
+
+        # Red dashed vertical line at peak performance
+        peak_idx = np.argmax(python_speedups)
+        peak_x = worker_counts[peak_idx]
+        ax.axvline(
+            x=peak_x,
+            color="#FF0000",
+            linestyle="--",
+            linewidth=2.5,
+            zorder=5,
+        )
+        ax.text(
+            peak_x + 0.15,
+            max(max(python_speedups), max(rust_speedups)) * 0.95,
+            f"PEAK!\n{peak_x} workers",
+            fontsize=11,
+            color="#FF0000",
+            fontweight="bold",
+            ha="left",
+            va="top",
+        )
+
+        # Title with yellow highlighter effect
+        title_text = "LCS Block Scheduler Speedups"
+        title = ax.set_title(
+            title_text,
+            fontsize=22,
+            fontweight="bold",
+            color="#222",
+            pad=20,
+        )
+        title.set_path_effects([
+            path_effects.withStroke(linewidth=12, foreground="#FFEB3B", alpha=0.7),
+            path_effects.Normal(),
+        ])
+
+        # Axis labels - casual style
+        ax.set_xlabel("Workers", fontsize=14, fontweight="bold")
+        ax.set_ylabel("Speedup vs 1 worker", fontsize=14, fontweight="bold")
+
+        # X-axis ticks rotated 45 degrees
+        ax.set_xticks(worker_counts)
+        ax.set_xticklabels(
+            [str(w) for w in worker_counts],
+            rotation=45,
+            ha="right",
+            fontsize=11,
+            fontweight="bold",
+        )
+        ax.tick_params(axis="y", labelsize=11)
+
+        # Legend at bottom center with rounded rectangle
+        legend = ax.legend(
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.15),
+            ncol=2,
+            fontsize=12,
+            frameon=True,
+            fancybox=True,
+            shadow=True,
+            edgecolor="#666",
+        )
+        legend.get_frame().set_facecolor("#FAFAFA")
+        legend.get_frame().set_linewidth(2)
+
+        # Add smug annotation
+        max_speedup = max(max(python_speedups), max(rust_speedups))
+        ax.annotate(
+            "no GIL go brrr",
+            xy=(worker_counts[-1], max_speedup * 0.6),
+            fontsize=10,
+            fontstyle="italic",
+            color="#666",
+            ha="right",
+        )
+
+        ax.set_xlim(0.2, max(worker_counts) + 0.8)
+        ax.set_ylim(0, max_speedup * 1.15)
+
+        plt.tight_layout()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(output_path, dpi=160, facecolor="white", edgecolor="none")
+        plt.close()
 
 
 def parse_args(argv: List[str]) -> argparse.Namespace:
