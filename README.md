@@ -1,6 +1,4 @@
 # Sucuri
-> **New:** A windowed tutorial + graph lab is available in `docs/sucuri_workspace_tutorial.html`. This in-progress UI is meant to help explore how Sucuri works and is still actively being developed.
-
 Python Dataflow Programming Library
 
 Read the examples and the referenced papers as I do not have a written tutorial (yet).
@@ -18,7 +16,7 @@ A completely new version with hierarchical distributed scheduling and fault tole
 This branch tracks CPython **3.14**’s experimental no-GIL runtime and ships a local build under `./cpython/python`. All examples, benchmarks, and tests should be executed with that interpreter:
 
 ```bash
-python -m unittest
+./cpython/python -m unittest
 ```
 
 Thread scheduling inside `pyDF` benefits directly from the removal of the global interpreter lock, allowing worker threads to run truly concurrently while keeping the existing API intact.
